@@ -1,18 +1,18 @@
 return {
   {
-    'loctvl842/monokai-pro.nvim',
+    -- unokai is a Neovim built-in colorscheme; this entry exists only to run
+    -- the custom highlight setup at startup with correct priority.
+    'folke/tokyonight.nvim',
     lazy = false,
     priority = 1000,
     config = function()
       vim.cmd.colorscheme 'unokai'
 
-      -- Color palette
       local colors = {
         border = '#0000ff',
         none = 'NONE',
       }
 
-      -- Highlight groups that use border color
       local border_groups = {
         'WinSeparator',
         'FloatBorder',
@@ -39,7 +39,7 @@ return {
     end,
   },
   {
-    'folke/tokyonight.nvim',
+    'loctvl842/monokai-pro.nvim',
     lazy = true,
   },
 }

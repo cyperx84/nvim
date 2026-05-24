@@ -294,7 +294,7 @@ return {
       -- Parser
       yaml_parser = 'native',
 
-      -- Use new command format (:Obsidian xxx)
+      legacy_commands = false,
     })
 
     -- =========================================================================
