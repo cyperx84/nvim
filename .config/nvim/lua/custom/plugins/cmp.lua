@@ -9,9 +9,7 @@ return {
     keymap = { preset = 'default' },
 
     appearance = {
-      nerd_font_variant = 'Nerd Font Mono',
-      highlight_ns = vim.api.nvim_create_namespace 'blink_cmp',
-      use_nvim_cmp_as_default = false,
+      nerd_font_variant = 'mono',
     },
 
     completion = {
@@ -37,7 +35,7 @@ return {
       },
     },
 
-    fuzzy = { implementation = 'prefer_rust_with_warning' },
+    fuzzy = { implementation = 'prefer_rust' },
   },
   opts_extend = { 'sources.default' },
 }

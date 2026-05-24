@@ -1,9 +1,8 @@
 return {
   {
-    'folke/tokyonight.nvim',
+    'loctvl842/monokai-pro.nvim',
     lazy = false,
     priority = 1000,
-    opts = {},
     config = function()
       vim.cmd.colorscheme 'unokai'
 
@@ -32,19 +31,15 @@ return {
 
       set_custom_highlights()
 
-      -- Persist highlights after colorscheme changes
+      -- Re-apply after colorscheme changes only (not per-window/buffer)
       vim.api.nvim_create_autocmd('ColorScheme', {
         pattern = '*',
-        callback = set_custom_highlights,
-      })
-
-      -- Re-apply after window/buffer changes
-      vim.api.nvim_create_autocmd({ 'WinEnter', 'BufEnter', 'CmdlineLeave' }, {
         callback = set_custom_highlights,
       })
     end,
   },
   {
-    'loctvl842/monokai-pro.nvim',
+    'folke/tokyonight.nvim',
+    lazy = true,
   },
 }

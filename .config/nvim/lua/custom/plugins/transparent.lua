@@ -31,9 +31,21 @@ return {
     { '<leader>tt', function() set(not on) end, desc = 'Transparent Toggle' },
   },
   config = function()
-    for _, g in ipairs(groups) do
-      saved[g] = vim.api.nvim_get_hl(0, { name = g, link = false })
+    local function snapshot()
+      for _, g in ipairs(groups) do
+        saved[g] = vim.api.nvim_get_hl(0, { name = g, link = false })
+      end
     end
+    snapshot()
+    -- Refresh snapshot when colorscheme changes so toggling off restores correct colors
+    vim.api.nvim_create_autocmd('ColorScheme', {
+      callback = function()
+        snapshot()
+        if on then
+          set(true)
+        end
+      end,
+    })
     set(true)
   end,
 }

@@ -205,7 +205,7 @@ return {
 
       -- Completion
       completion = {
-        blink = true,
+        blink = { enabled = true },
         min_chars = 2,
       },
 
@@ -295,7 +295,6 @@ return {
       yaml_parser = 'native',
 
       -- Use new command format (:Obsidian xxx)
-      legacy_commands = false,
     })
 
     -- =========================================================================

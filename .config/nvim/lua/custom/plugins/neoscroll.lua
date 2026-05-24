@@ -8,7 +8,7 @@ return {
       stop_eof = true,
       respect_scrolloff = true,
       cursor_scrolls_alone = true, -- Allow cursor to move even when view can't scroll
-      easing_function = 'sine', -- sine, cubic, quadratic, circular
+      easing = 'sine', -- sine, cubic, quadratic, circular
       pre_hook = nil,
       post_hook = function(info)
         -- Smart center: only zz when in the middle of the buffer
