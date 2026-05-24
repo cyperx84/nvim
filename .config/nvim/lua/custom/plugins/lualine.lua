@@ -181,8 +181,8 @@ return {
           {
             function()
               local noice_ok, noice = pcall(require, 'noice')
-              if noice_ok and noice.api.statusline.mode.has() then
-                return noice.api.statusline.mode.get()
+              if noice_ok and noice.api.status.mode.has() then
+                return noice.api.status.mode.get()
               end
               return ''
             end,

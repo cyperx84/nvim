@@ -121,10 +121,6 @@ return {
   config = function(_, opts)
     require("snacks").setup(opts)
 
-    if opts.image and opts.image.enabled then
-      require("snacks").image.setup()
-    end
-
     vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
 
     require("milli").snacks({ splash = splash_name, loop = true })

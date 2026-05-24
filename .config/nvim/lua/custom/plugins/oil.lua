@@ -18,7 +18,7 @@ return {
       },
       -- Window-local options to use for oil buffers
       delete_to_trash = true,
-      confirm = {
+      confirmation = {
         default = true,
       },
       -- Selecting a new/moved/renamed file or directory will prompt you to save changes first
@@ -75,7 +75,7 @@ return {
       use_default_keymaps = true,
       view_options = {
         show_hidden = true,
-        natural_order = true,
+        natural_order = 'fast',
         is_always_hidden = function(name, _)
           return name == '..' or name == '.git'
         end,

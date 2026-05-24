@@ -25,7 +25,7 @@ return {
         toml = { 'taplo' },
         css = { 'prettierd', 'prettier', stop_after_first = true },
         scss = { 'prettierd', 'prettier', stop_after_first = true },
-        sh = { 'shellcheck' },
+        sh = { 'shfmt' },
         go = { 'gofmt' },
         xml = { 'xmllint' },
       },
@@ -33,7 +33,7 @@ return {
 
     vim.keymap.set({ 'n', 'v' }, '<leader>l', function()
       conform.format {
-        lsp_fallback = true,
+        lsp_format = 'fallback',
         async = false,
         timeout_ms = 1000,
       }

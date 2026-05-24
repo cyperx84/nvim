@@ -1,5 +1,6 @@
 return {
   'ThePrimeagen/harpoon',
+  branch = 'master',
   dependencies = { 'nvim-lua/plenary.nvim' },
   config = function()
     local mark = require 'harpoon.mark'
@@ -13,11 +14,11 @@ return {
       }
     })
 
-    vim.keymap.set('n', '<M-m>', mark.add_file, {
+    vim.keymap.set('n', '<M-h>', mark.add_file, {
       desc = 'Harpoon: Mark File',
     })
 
-    vim.keymap.set('n', '<leader>h', ui.toggle_quick_menu, {
+    vim.keymap.set('n', '<M-m>', ui.toggle_quick_menu, {
       desc = 'Harpoon: Toggle Menu',
     })
 

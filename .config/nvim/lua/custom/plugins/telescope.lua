@@ -46,7 +46,6 @@ return {
 
           sorting_strategy = 'ascending',
           winblend = 0,
-          follow_symlinks = true,
           vimgrep_arguments = {
             'rg',
             '--color=never',

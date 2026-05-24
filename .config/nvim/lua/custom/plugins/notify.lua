@@ -7,7 +7,7 @@ return {
     require("notify").setup({
       background_colour = "#000000", -- or "NotifyBackground" if using a highlight group
       stages = "fade_in_slide_out",
-      timeout = 50,
+      timeout = 3000,
       fps = 60,
       render = "compact",
     })
