@@ -55,8 +55,7 @@ end
 
 return {
   'coder/claudecode.nvim',
-  lazy = false,
-  priority = 1000,
+  event = 'VimEnter',
   dependencies = {
     'folke/snacks.nvim',
   },
