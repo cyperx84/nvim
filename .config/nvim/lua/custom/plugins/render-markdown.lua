@@ -2,7 +2,6 @@ return {
   'MeanderingProgrammer/render-markdown.nvim',
   lazy = true,
   ft = 'markdown',
-  priority = 1000, -- Load after treesitter
   dependencies = {
     'nvim-treesitter/nvim-treesitter',
     'echasnovski/mini.icons',
