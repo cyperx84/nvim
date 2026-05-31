@@ -18,6 +18,7 @@ A modern, AI-powered Neovim configuration built on [kickstart.nvim](https://gith
 ## 📊 Stats at a Glance
 
 - **42 plugins** managed by lazy.nvim
+- **~55 ms** warm startup ([lazy-loaded & profiled](docs/performance.md))
 - **70+ custom keybindings** with mnemonic grouping
 - **4 AI assistants** (CodeCompanion, Claude Code, Copilot, Supermaven)
 - **4 LSP servers** with 13+ formatters
@@ -74,6 +75,15 @@ On first launch:
 
 See [full keybindings](#core-keybindings) below.
 
+## 📖 Documentation
+
+Deep-dive guides live in [`docs/`](docs/):
+
+- **[Keybindings](docs/keybindings.md)** — full reference
+- **[Plugins](docs/plugins.md)** — the plugin set and how each loads
+- **[Architecture](docs/architecture.md)** — layout, load order, conventions
+- **[Performance](docs/performance.md)** — startup tuning (~55 ms warm; lazy vs eager)
+
 ## 🎯 Key Features
 
 ### AI-Powered Development
@@ -96,14 +106,14 @@ See [full keybindings](#core-keybindings) below.
 - **Oil.nvim** (`Ctrl+e`) - Edit filesystem like a buffer
 - **Yazi** (`-`) - TUI file manager with grep integration
 - **Telescope** (`<leader>s*`) - Fuzzy finder for files/grep/buffers
-- **Harpoon** (`Alt+e`) - Quick file bookmarks
+- **Harpoon** (`Alt+a` mark, `Alt+e` menu, `Alt+j/k/l…` jump) - Quick file bookmarks (harpoon2)
 
 ### Git Workflows
 
 **Full-Featured Git Integration:**
 - **Neogit** (`<leader>gg`) - Comprehensive git UI
 - **Gitsigns** (`]c`/`[c`) - Inline change indicators
-- **Git Worktrees** (`<leader>gW`) - Multi-worktree management
+- **Git Worktrees** (`<leader>gwl` list / `<leader>gwc` create) - Multi-worktree management
 - **Vim Fugitive** - Classic git commands
 
 ### Obsidian Note-Taking
