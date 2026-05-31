@@ -9,43 +9,6 @@
 -- LOCAL HELPER FUNCTIONS
 -- =============================================================================
 
---- Show backlinks for the current note using telescope
---- Workaround: The built-in :Obsidian backlinks command has a bug where the LSP
---- references handler doesn't return results to the picker, even though the
---- underlying search works correctly. This function uses note:backlinks() directly.
---- Issue: Can be removed when upstream fixes the backlinks command
----@return nil
-local function show_backlinks()
-  local api = require('obsidian.api')
-  local note = api.current_note(0, {})
-
-  if not note then
-    vim.notify('No note found in vault', vim.log.levels.ERROR)
-    return
-  end
-
-  local backlinks = note:backlinks({ timeout = 5000 })
-
-  if #backlinks == 0 then
-    vim.notify('No backlinks found for ' .. note.id, vim.log.levels.INFO)
-    return
-  end
-
-  local qf_list = {}
-  for _, bl in ipairs(backlinks) do
-    table.insert(qf_list, {
-      filename = tostring(bl.path),
-      lnum = bl.line,
-      col = bl.start or 1,
-      text = bl.text or '',
-    })
-  end
-
-  vim.fn.setqflist(qf_list, 'r')
-  vim.fn.setqflist({}, 'a', { title = 'Backlinks to ' .. note.id })
-  require('telescope.builtin').quickfix({ prompt_title = 'Backlinks to ' .. note.id })
-end
-
 --- Rename the current note (updates frontmatter id/title and filename)
 ---@return nil
 local function rename_note()
@@ -115,65 +78,6 @@ local function toggle_checkboxes_range(start_line, end_line)
 end
 
 -- =============================================================================
--- MONKEY-PATCHES FOR UPSTREAM BUGS
--- =============================================================================
-
---- Apply fixes for obsidian.nvim picker bugs
---- Workaround: The tag picker expects entry.user_data as string, but Telescope
---- returns {tag="x"} for existing tags. This normalizes the format.
---- Issue: Can be removed when upstream fixes tag picker data handling
-local function apply_tag_picker_fixes()
-  local ok, mappings = pcall(require, 'obsidian.picker.mappings')
-  if not ok then
-    return
-  end
-
-  local orig_insert_tag = mappings.insert_tag
-  local orig_tag_note = mappings.tag_note
-
-  local function normalize_entry(entry)
-    if type(entry) == 'string' then
-      return { user_data = entry }
-    end
-    if type(entry) == 'table' and entry.user_data then
-      if type(entry.user_data) == 'table' and entry.user_data.tag then
-        entry.user_data = entry.user_data.tag
-      end
-    end
-    return entry
-  end
-
-  mappings.insert_tag = function(entry)
-    return orig_insert_tag(normalize_entry(entry))
-  end
-
-  mappings.tag_note = function(...)
-    local entries = { ... }
-    for i, entry in ipairs(entries) do
-      entries[i] = normalize_entry(entry)
-    end
-
-    -- Fix: Ensure calling_bufnr is valid (broken in fresh vaults with no tags)
-    local picker = require('obsidian.picker')
-    if not picker.state.calling_bufnr or not vim.api.nvim_buf_is_valid(picker.state.calling_bufnr) then
-      local alt_buf = vim.fn.bufnr('#')
-      if alt_buf ~= -1 and vim.api.nvim_buf_is_valid(alt_buf) then
-        picker.state.calling_bufnr = alt_buf
-      else
-        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == 'markdown' then
-            picker.state.calling_bufnr = buf
-            break
-          end
-        end
-      end
-    end
-
-    return orig_tag_note(unpack(entries))
-  end
-end
-
--- =============================================================================
 -- PLUGIN SPECIFICATION
 -- =============================================================================
 
@@ -229,10 +133,14 @@ return {
 
       -- Frontmatter
       frontmatter = {
-        enabled = function(filename)
+        -- Manage frontmatter only for notes physically under the iCloud vault
+        -- (not the 'klaw' workspace). `Obsidian.buf_dir` is the current note's
+        -- absolute directory, set on every markdown BufEnter — so this works
+        -- regardless of which workspace is currently active.
+        enabled = function()
           local documents_path = vim.fn.expand('~/Library/Mobile Documents/iCloud~md~obsidian/Documents')
-          local absolute_filename = vim.fn.fnamemodify(filename, ':p')
-          return absolute_filename:match('^' .. vim.pesc(documents_path)) ~= nil
+          local dir = Obsidian.buf_dir and tostring(Obsidian.buf_dir) or ''
+          return dir:match('^' .. vim.pesc(documents_path)) ~= nil
         end,
 
         func = function(note)
@@ -291,16 +199,8 @@ return {
       -- UI (disabled in favor of render-markdown.nvim)
       ui = { enable = false },
 
-      -- Parser
-      yaml_parser = 'native',
-
       legacy_commands = false,
     })
-
-    -- =========================================================================
-    -- APPLY MONKEY-PATCHES
-    -- =========================================================================
-    vim.schedule(apply_tag_picker_fixes)
 
     -- =========================================================================
     -- MARKDOWN FILE SETTINGS & KEYMAPS
@@ -360,7 +260,7 @@ return {
 
         -- Search & navigation
         vim.keymap.set('n', '<leader>os', ':Obsidian search<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian [S]earch' }))
-        vim.keymap.set('n', '<leader>ob', show_backlinks, vim.tbl_extend('force', opts, { desc = '[O]bsidian [B]acklinks' }))
+        vim.keymap.set('n', '<leader>ob', ':Obsidian backlinks<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian [B]acklinks' }))
         vim.keymap.set('n', '<leader>ol', ':Obsidian links<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian [L]inks' }))
         vim.keymap.set('n', '<leader>ot', ':Obsidian tags<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian [T]ags' }))
         vim.keymap.set('n', '<leader>oF', ':Obsidian follow_link<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian [F]ollow link' }))
