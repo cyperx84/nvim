@@ -1,6 +1,7 @@
 return {
   'nvim-lualine/lualine.nvim',
   dependencies = { 'nvim-tree/nvim-web-devicons' },
+  event = 'VeryLazy',
   config = function()
     -- Define the custom spinner component with optimized animation
     local M = require('lualine.component'):extend()

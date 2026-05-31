@@ -1,7 +1,20 @@
 require('lazy').setup({
-  'tpope/vim-sleuth',
+  { 'tpope/vim-sleuth', event = { 'BufReadPre', 'BufNewFile' } },
   { import = 'custom.plugins' },
 }, {
+  performance = {
+    rtp = {
+      -- Disable rarely-used built-in runtime plugins (oil/yazi replace netrw).
+      disabled_plugins = {
+        'gzip',
+        'tarPlugin',
+        'zipPlugin',
+        'tohtml',
+        'tutor',
+        'netrwPlugin',
+      },
+    },
+  },
   ui = {
     icons = vim.g.have_nerd_font and {} or {
       cmd = '⌘',

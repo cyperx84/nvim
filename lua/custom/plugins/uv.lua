@@ -1,5 +1,6 @@
 return {
   'benomahony/uv.nvim',
+  event = 'VeryLazy',
   config = function()
     require('uv').setup({
         -- Auto-activate virtual environments when found

@@ -7,6 +7,13 @@ return {
     ---@module 'snacks' <- Loads `snacks.nvim` types for configuration intellisense.
     { "folke/snacks.nvim", opts = { input = {}, picker = {}, terminal = {} } },
   },
+  keys = {
+    { '<leader>Oa', mode = { 'n', 'x' }, desc = 'OpenCode Ask' },
+    { '<leader>Ox', mode = { 'n', 'x' }, desc = 'OpenCode Execute action' },
+    { "<M-'>", mode = { 'n', 't' }, desc = 'OpenCode Toggle' },
+    { 'go', mode = { 'n', 'x' }, desc = 'Add range to opencode' },
+    { 'goo', mode = 'n', desc = 'Add line to opencode' },
+  },
   config = function()
     ---@type opencode.Opts
     vim.g.opencode_opts = {

@@ -1,5 +1,10 @@
 return {
   'ThePrimeagen/git-worktree.nvim',
+  dependencies = { 'nvim-telescope/telescope.nvim' },
+  keys = {
+    { '<leader>gwl', desc = 'List worktrees (C-d to delete)' },
+    { '<leader>gwc', desc = 'Create worktree' },
+  },
   config = function()
     require("git-worktree").setup({
       change_directory_command = "cd",

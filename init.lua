@@ -1,3 +1,7 @@
+-- Enable the Lua module bytecode cache (Neovim 0.9+) before anything is required.
+-- Biggest single startup win: avoids re-parsing/compiling every Lua module.
+vim.loader.enable()
+
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
