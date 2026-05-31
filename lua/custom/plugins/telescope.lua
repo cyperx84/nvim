@@ -61,7 +61,7 @@ return {
           -- make `:Telescope find_files` chase symlinks too
           find_files = {
             follow = true,
-            hidden = true,
+            hidden = false,
           },
         },
         extensions = {
@@ -78,6 +78,9 @@ return {
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>sF', function()
+        builtin.find_files { hidden = true, no_ignore = true }
+      end, { desc = '[S]earch [F]iles (incl. hidden + ignored)' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -107,8 +110,7 @@ return {
         builtin.find_files {
           cwd = vim.fn.resolve(vim.fn.stdpath 'config'),
           follow = true,
-          hidden = true,
-          file_ignore_patterns = {},
+          hidden = false,
           use_git_root = false,
         }
       end, { desc = '[S]earch [N]eovim files' })
