@@ -1,56 +1,31 @@
 return {
   'ThePrimeagen/harpoon',
-  branch = 'master',
+  branch = 'harpoon2',
   dependencies = { 'nvim-lua/plenary.nvim' },
   config = function()
-    local mark = require 'harpoon.mark'
-    local ui = require 'harpoon.ui'
+    local harpoon = require 'harpoon'
 
-    -- Setup Harpoon
-    require('harpoon').setup({
-      menu = {
-        width = 60,
-        height = 10,
-      }
-    })
+    -- REQUIRED
+    harpoon:setup()
 
-    vim.keymap.set('n', '<leader>ha', mark.add_file, {
+    vim.keymap.set('n', '<M-a>', function()
+      harpoon:list():add()
+    end, {
       desc = 'Harpoon: Mark File',
     })
 
-    vim.keymap.set('n', '<leader>hm', ui.toggle_quick_menu, {
+    vim.keymap.set('n', '<M-e>', function()
+      harpoon.ui:toggle_quick_menu(harpoon:list())
+    end, {
       desc = 'Harpoon: Toggle Menu',
     })
 
-    vim.keymap.set('n', '<leader>1', function()
-      ui.nav_file(1)
-    end, {
-      desc = 'Harpoon File 1',
-    })
-    vim.keymap.set('n', '<leader>2', function()
-      ui.nav_file(2)
-    end, {
-      desc = 'Harpoon File 2',
-    })
-    vim.keymap.set('n', '<leader>3', function()
-      ui.nav_file(3)
-    end, {
-      desc = 'Harpoon File 3',
-    })
-    vim.keymap.set('n', '<leader>4', function()
-      ui.nav_file(4)
-    end, {
-      desc = 'Harpoon File 4',
-    })
-    vim.keymap.set('n', '<leader>5', function()
-      ui.nav_file(5)
-    end, {
-      desc = 'Harpoon File 5',
-    })
-    vim.keymap.set('n', '<leader>6', function()
-      ui.nav_file(6)
-    end, {
-      desc = 'Harpoon File 6',
-    })
+    for i, key in ipairs { 'j', 'k', 'l', 'u', 'i', 'o', '7', '8', '9' } do
+      vim.keymap.set('n', '<M-' .. key .. '>', function()
+        harpoon:list():select(i)
+      end, {
+        desc = 'Harpoon File ' .. i,
+      })
+    end
   end,
 }
