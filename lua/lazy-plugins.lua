@@ -7,6 +7,7 @@ require('lazy').setup({
       -- Disable rarely-used built-in runtime plugins (oil/yazi replace netrw).
       disabled_plugins = {
         'gzip',
+        'matchit',
         'tarPlugin',
         'zipPlugin',
         'tohtml',

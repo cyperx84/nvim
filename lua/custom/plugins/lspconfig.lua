@@ -8,15 +8,16 @@ return {
       },
     },
   },
+  -- Mason (LSP/tool installer) is kept off the startup critical path: it loads
+  -- on its own commands, and the installer bridges are required lazily from the
+  -- deferred setup at the end of lspconfig's config().
+  { 'williamboman/mason.nvim', cmd = { 'Mason', 'MasonInstall', 'MasonUpdate', 'MasonUninstall', 'MasonLog' }, opts = {} },
+  { 'williamboman/mason-lspconfig.nvim', lazy = true },
+  { 'WhoIsSethDaniel/mason-tool-installer.nvim', lazy = true },
+  -- LSP progress UI: only needed once a language server attaches.
+  { 'j-hui/fidget.nvim', event = 'LspAttach', opts = {} },
   {
     'neovim/nvim-lspconfig',
-    dependencies = {
-      -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
-      { 'williamboman/mason.nvim', opts = {} },
-      'williamboman/mason-lspconfig.nvim',
-      'WhoIsSethDaniel/mason-tool-installer.nvim',
-      { 'j-hui/fidget.nvim', opts = {} },
-    },
     config = function()
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
@@ -186,7 +187,6 @@ return {
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
       })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       -- Apply capabilities to all servers globally (nvim 0.11+ API)
       vim.lsp.config('*', { capabilities = capabilities })
@@ -201,10 +201,16 @@ return {
       -- Enable all servers
       vim.lsp.enable(vim.tbl_keys(servers))
 
-      require('mason-lspconfig').setup {
-        ensure_installed = {},
-        automatic_enable = false,
-      }
+      -- Defer the Mason-backed installer machinery off the startup critical
+      -- path. Servers still attach immediately via vim.lsp.enable above; this
+      -- only auto-installs missing servers/tools, which can wait a tick.
+      vim.schedule(function()
+        require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+        require('mason-lspconfig').setup {
+          ensure_installed = {},
+          automatic_enable = false,
+        }
+      end)
     end,
   },
 }
