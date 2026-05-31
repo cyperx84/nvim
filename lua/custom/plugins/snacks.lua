@@ -24,11 +24,18 @@ return {
   },
   opts = function()
     local milli = require("milli")
+    -- Curated to a uniform 50-wide, ~19-25 tall set so the dashboard lays out
+    -- identically on every launch. Also kept lightweight (≤152 frames) so the
+    -- startup splash-parse stays fast — `lights` (501 frames, ~5x the load cost)
+    -- was dropped for this reason. Other outliers excluded: width (attackontitan
+    -- 84, skeleton 80, skulltwo 40), height (blackhole 14, flyingdragon 45) and
+    -- the 60-wide group (dancerramp/finger/robot).
     local all = {
-      "aiface", "attackontitan", "blackhole", "dancerramp", "finger",
-      "flyingdragon", "lighningtornado", "lights", "robot", "shader",
-      "skeleton", "skullone", "skulltwo",
+      "aiface", "shader", "lighningtornado", "skullone",
     }
+    -- LuaJIT's math.random isn't auto-seeded, so without this every launch
+    -- picks the same index. hrtime() is a high-entropy per-launch seed.
+    math.randomseed(vim.loop.hrtime())
     splash_name = all[math.random(#all)]
     local splash = milli.load({ splash = splash_name })
     return {
@@ -61,6 +68,10 @@ return {
         end,
       },
       dashboard = {
+        -- Pane follows the splash width so wider art still centers (snacks
+        -- defaults to 60 and left-pins anything wider). Min 60 keeps the menu
+        -- and recent-file paths readable — a safety net if a wide splash is added.
+        width = math.max(splash.cols or 60, 60),
         preset = {
           pick = nil,
           ---@type snacks.dashboard.Item[]
@@ -123,7 +134,9 @@ return {
 
     vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
 
-    require("milli").snacks({ splash = splash_name, loop = true })
+    -- Animate the splash so it follows snacks' header on window reflow (e.g.
+    -- opening a vertical split). See lua/custom/milli_follow.lua for why.
+    require("custom.milli_follow").attach(splash_name)
 
     Snacks.toggle.new({
       id = "ufo",
