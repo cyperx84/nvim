@@ -12,7 +12,11 @@ return {
     local harpoon = require 'harpoon'
 
     -- REQUIRED
-    harpoon:setup()
+    harpoon:setup({
+      settings = {
+        save_on_toggle = true, -- apply menu edits when closing via toggle/q/Esc
+      },
+    })
 
     vim.keymap.set('n', '<M-a>', function()
       harpoon:list():add()

@@ -93,9 +93,15 @@ return {
     -- =========================================================================
     require('obsidian').setup({
       -- Workspaces
+      -- Specific vaults come first so first-match resolution picks them for
+      -- their own notes. 'notes' is a flexible catch-all: drop notes in any
+      -- structure under ~/notes and obsidian manages frontmatter there, while
+      -- leaving code repos, dotfiles, and ~/.config untouched. To relocate your
+      -- notes later, just change this one path.
       workspaces = {
         { name = 'klaw', path = vim.fn.expand('~/.openclaw/workspace/vault') },
         { name = 'cyperx', path = vim.fn.expand('~/Library/Mobile Documents/iCloud~md~obsidian/Documents/cyperx') },
+        { name = 'notes', path = vim.fn.expand('~/notes') },
       },
 
       -- Daily notes
@@ -134,15 +140,11 @@ return {
 
       -- Frontmatter
       frontmatter = {
-        -- Manage frontmatter only for notes physically under the iCloud vault
-        -- (not the 'klaw' workspace). `Obsidian.buf_dir` is the current note's
-        -- absolute directory, set on every markdown BufEnter — so this works
-        -- regardless of which workspace is currently active.
-        enabled = function()
-          local documents_path = vim.fn.expand('~/Library/Mobile Documents/iCloud~md~obsidian/Documents')
-          local dir = Obsidian.buf_dir and tostring(Obsidian.buf_dir) or ''
-          return dir:match('^' .. vim.pesc(documents_path)) ~= nil
-        end,
+        -- Manage frontmatter for notes in any configured workspace (the two
+        -- vaults plus anything under ~/notes). Markdown outside these — code
+        -- repos, dotfiles, ~/.config — is never touched, since obsidian only
+        -- activates inside a workspace.
+        enabled = true,
 
         func = function(note)
           local now = os.date('%Y-%m-%d %H:%M')
