@@ -107,9 +107,10 @@ return {
         template = 'daily.md',
       },
 
-      -- Completion
+      -- Completion (served by the built-in obsidian-ls LSP server, surfaced
+      -- through blink.cmp's `lsp` source; the old `completion.blink` opt is
+      -- deprecated and stripped by the fork)
       completion = {
-        blink = { enabled = true },
         min_chars = 2,
       },
 
@@ -175,10 +176,10 @@ return {
       -- Attachments
       attachments = {
         folder = 'assets/imgs',
-        name_func = function()
+        img_name_func = function()
           return os.date('%Y-%m-%d-%H%M%S')
         end,
-        text_func = function(path)
+        img_text_func = function(path)
           local filename = vim.fn.fnamemodify(path.filename, ':t')
           return string.format('![%s](assets/imgs/%s)', path.name, filename)
         end,
@@ -192,6 +193,10 @@ return {
         name = 'telescope.nvim',
         note_mappings = { new = '<C-x>', insert_link = '<C-l>' },
         tag_mappings = { tag_note = '<C-x>', insert_tag = '<C-l>' },
+      },
+
+      -- Search/sort (sort_by/sort_reversed live under `search`, not `picker`)
+      search = {
         sort_by = 'modified',
         sort_reversed = true,
       },

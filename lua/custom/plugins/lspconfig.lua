@@ -91,15 +91,10 @@ return {
         end,
       })
 
-      -- Configure LSP hover and signature windows
-      vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
-        vim.lsp.handlers.hover,
-        { border = 'single' }
-      )
-      vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
-        vim.lsp.handlers.signature_help,
-        { border = 'single' }
-      )
+      -- Single-line borders for LSP hover/signature (and other) floats.
+      -- The old vim.lsp.with()/vim.lsp.handlers[...] override is deprecated in
+      -- 0.11+ and warns on 0.12; vim.o.winborder is the supported replacement.
+      vim.o.winborder = 'single'
 
       -- Make float windows transparent
       vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })

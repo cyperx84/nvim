@@ -18,9 +18,6 @@ return {
       },
       -- Window-local options to use for oil buffers
       delete_to_trash = true,
-      confirmation = {
-        default = true,
-      },
       -- Selecting a new/moved/renamed file or directory will prompt you to save changes first
       -- (:help prompt_save_on_select_new_entry)
       prompt_save_on_select_new_entry = false,
@@ -86,7 +83,7 @@ return {
         max_height = 0.5, -- 80% of screen height
         border = 'rounded',
       },
-      preview = {
+      preview_win = {
         max_width = 0.5,
         min_width = { 40, 0.4 },
         width = nil,

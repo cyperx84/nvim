@@ -130,6 +130,6 @@ return {
 
     -- Quick actions
     { '<leader>c?', '<cmd>help claudecode<cr>', desc = 'Claude Code help' },
-    { '<leader>cq', '<cmd>ClaudeCode --quit<cr>', desc = 'Quit Claude Code' },
+    { '<leader>cq', '<cmd>ClaudeCodeClose<cr>', desc = 'Close Claude Code' },
   },
 }

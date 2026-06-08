@@ -15,16 +15,16 @@ return {
   -- Keymaps to register (set to false to disable)
   keymaps = {
     prefix = "<leader>u",  -- Main prefix for uv commands
-    commands = true,       -- Show uv commands menu (<leader>x)
-    run_file = true,       -- Run current file (<leader>xr)
-    run_selection = true,  -- Run selected code (<leader>xs)
-    run_function = true,   -- Run function (<leader>xf)
-    venv = true,           -- Environment management (<leader>xe)
-    init = true,           -- Initialize uv project (<leader>xi)
-    add = true,            -- Add a package (<leader>xa)
-    remove = true,         -- Remove a package (<leader>xd)
-    sync = true,           -- Sync packages (<leader>xc)
-    sync_all = true,       -- Sync all packages, extras and groups (<leader>xC)
+    commands = true,       -- Show uv commands menu (<leader>u)
+    run_file = true,       -- Run current file (<leader>ur)
+    run_selection = true,  -- Run selected code (<leader>us)
+    run_function = true,   -- Run function (<leader>uf)
+    venv = true,           -- Environment management (<leader>ue)
+    init = true,           -- Initialize uv project (<leader>ui)
+    add = true,            -- Add a package (<leader>ua)
+    remove = true,         -- Remove a package (<leader>ud)
+    sync = true,           -- Sync packages (<leader>uc)
+    sync_all = true,       -- Sync all packages, extras and groups (<leader>uC)
   },
 
   -- Execution options

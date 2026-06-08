@@ -23,8 +23,8 @@ return {
       telescope.setup {
         defaults = {
           -- follow symlinks in both file and grep pickers
-          -- NOTE: These are regex patterns, not literal strings! Escape dots with \\
-          file_ignore_patterns = { '\\.git', 'node_modules', '\\.cache', '\\.obsidian', '\\.smart%-connections' },
+          -- NOTE: These are Lua patterns, not regex! Escape dots with %. (a backslash does NOT escape).
+          file_ignore_patterns = { '%.git', 'node_modules', '%.cache', '%.obsidian', '%.smart%-connections' },
           -- Centered float layout with larger preview
           layout_strategy = 'horizontal',
           layout_config = {
@@ -111,7 +111,6 @@ return {
           cwd = vim.fn.resolve(vim.fn.stdpath 'config'),
           follow = true,
           hidden = false,
-          use_git_root = false,
         }
       end, { desc = '[S]earch [N]eovim files' })
     end,

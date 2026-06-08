@@ -1,6 +1,10 @@
 return {
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    -- Pin to master: the `main` branch is a full, incompatible rewrite that drops
+    -- the opts/highlight/indent API below. Without this pin, an upstream default-
+    -- branch flip to `main` would break this config with no change on our side.
+    branch = 'master',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
