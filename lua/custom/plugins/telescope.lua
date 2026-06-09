@@ -20,8 +20,33 @@ return {
       local themes = require 'telescope.themes'
       local builtin = require 'telescope.builtin'
 
+      -- Compat shim for nvim-treesitter `main`: telescope 0.1.x still calls the
+      -- old master API that the rewrite removed. `preview.treesitter = false`
+      -- (below) covers the previewer, but `current_buffer_fuzzy_find` (<leader>/)
+      -- calls `nvim-treesitter.parsers.ft_to_lang` unconditionally, so back the
+      -- few functions it needs with stock vim.treesitter. Telescope is the only
+      -- consumer of these modules, so the shim is self-contained.
+      local ok_parsers, ts_parsers = pcall(require, 'nvim-treesitter.parsers')
+      if ok_parsers and type(ts_parsers) == 'table' and not ts_parsers.ft_to_lang then
+        ts_parsers.ft_to_lang = function(ft)
+          return vim.treesitter.language.get_lang(ft) or ft
+        end
+      end
+      if not package.loaded['nvim-treesitter.configs'] then
+        package.loaded['nvim-treesitter.configs'] = {
+          is_enabled = function() return true end,
+          get_module = function() return {} end,
+        }
+      end
+
       telescope.setup {
         defaults = {
+          -- Use regex (not treesitter) highlighting in previews. Telescope
+          -- 0.1.x's treesitter previewer calls the old nvim-treesitter master
+          -- API (nvim-treesitter.parsers.ft_to_lang / .configs), which the
+          -- main-branch rewrite removed — leaving it on errors every preview.
+          -- Regex highlighting still colours previews (syntax is enabled).
+          preview = { treesitter = false },
           -- follow symlinks in both file and grep pickers
           -- NOTE: These are Lua patterns, not regex! Escape dots with %. (a backslash does NOT escape).
           file_ignore_patterns = { '%.git', 'node_modules', '%.cache', '%.obsidian', '%.smart%-connections' },
