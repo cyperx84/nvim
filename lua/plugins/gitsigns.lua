@@ -6,7 +6,13 @@ M.specs = {
 }
 
 function M.config()
-  require('gitsigns').setup {
+  -- Originally event = { 'BufReadPre', 'BufNewFile' } under lazy.nvim; same
+  -- deferral here. Gitsigns' own autocmds (created during setup) attach to
+  -- the triggering buffer once it finishes loading, exactly as under lazy.
+  vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufNewFile' }, {
+    once = true,
+    callback = function()
+      require('gitsigns').setup {
     signs = {
       add = { text = '+' },
       change = { text = '~' },
@@ -52,7 +58,9 @@ function M.config()
       map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = '[T]oggle git show [b]lame line' })
       map('n', '<leader>tD', gitsigns.preview_hunk_inline, { desc = '[T]oggle git show [D]eleted' })
     end,
-  }
+      }
+    end,
+  })
 end
 
 return M

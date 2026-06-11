@@ -9,7 +9,16 @@ M.specs = {
   { src = 'https://github.com/leoluz/nvim-dap-go' },
 }
 
-function M.config()
+-- The whole DAP stack was keys-only lazy under lazy.nvim and costs ~10ms to
+-- set up (mason-nvim-dap alone is ~6ms), so keep it off the startup path:
+-- keymaps are defined eagerly, setup runs on the first debug keypress.
+local did_setup = false
+local function ensure_setup()
+  if did_setup then
+    return
+  end
+  did_setup = true
+
   local dap = require 'dap'
   local dapui = require 'dapui'
 
@@ -59,27 +68,36 @@ function M.config()
       detached = vim.fn.has 'win32' == 0,
     },
   }
+end
 
+function M.config()
   vim.keymap.set('n', '<leader>ds', function()
+    ensure_setup()
     require('dap').continue()
   end, { desc = 'Debug: Start/Continue' })
   vim.keymap.set('n', '<leader>di', function()
+    ensure_setup()
     require('dap').step_into()
   end, { desc = 'Debug: Step Into' })
   vim.keymap.set('n', '<leader>do', function()
+    ensure_setup()
     require('dap').step_over()
   end, { desc = 'Debug: Step Over' })
   vim.keymap.set('n', '<leader>du', function()
+    ensure_setup()
     require('dap').step_out()
   end, { desc = 'Debug: Step Out' })
   vim.keymap.set('n', '<leader>b', function()
+    ensure_setup()
     require('dap').toggle_breakpoint()
   end, { desc = 'Debug: Toggle Breakpoint' })
   vim.keymap.set('n', '<leader>B', function()
+    ensure_setup()
     require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
   end, { desc = 'Debug: Set Breakpoint' })
   -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
   vim.keymap.set('n', '<leader>dd', function()
+    ensure_setup()
     require('dapui').toggle()
   end, { desc = 'Debug: See last session result.' })
 end

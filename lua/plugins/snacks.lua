@@ -102,7 +102,9 @@ function M.config()
               align = "center",
               text = {
                 { "⚡ Neovim loaded ", hl = "footer" },
-                { tostring(#vim.pack.get()), hl = "special" },
+                -- info=false is critical: info=true shells out to git per
+                -- plugin (~300ms for 56 plugins) on every dashboard render.
+                { tostring(#vim.pack.get(nil, { info = false })), hl = "special" },
                 { " plugins in ", hl = "footer" },
                 { boot_ms .. "ms", hl = "special" },
               },

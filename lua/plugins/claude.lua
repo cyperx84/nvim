@@ -61,10 +61,13 @@ M.specs = {
 }
 
 function M.config()
-  -- Setup deferred: original lazy spec used event = 'VimEnter'
-  vim.api.nvim_create_autocmd('VimEnter', {
+  -- Setup deferred past first paint: requiring claudecode costs ~8ms and the
+  -- plugin is only ever reached via keymaps, so VimEnter (pre-paint) was
+  -- needlessly on the critical path. UIEnter + schedule still runs well
+  -- before any human keypress.
+  vim.api.nvim_create_autocmd('UIEnter', {
     once = true,
-    callback = function()
+    callback = vim.schedule_wrap(function()
       local opts = {
         terminal_cmd = vim.fn.expand('~/.local/bin/claude') .. ' --dangerously-skip-permissions',
 
@@ -107,7 +110,7 @@ function M.config()
       })
 
       vim.opt.autoread = true
-    end,
+    end),
   })
 
   -- Keymaps (always eager)
