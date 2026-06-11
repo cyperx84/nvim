@@ -62,53 +62,51 @@ M.specs = {
 
 function M.config()
   -- Setup deferred: original lazy spec used event = 'VimEnter'
-  vim.api.nvim_create_autocmd('UIEnter', {
+  vim.api.nvim_create_autocmd('VimEnter', {
     once = true,
     callback = function()
-      vim.schedule(function()
-        local opts = {
-          terminal_cmd = vim.fn.expand('~/.local/bin/claude') .. ' --dangerously-skip-permissions',
+      local opts = {
+        terminal_cmd = vim.fn.expand('~/.local/bin/claude') .. ' --dangerously-skip-permissions',
 
-          port_range = { min = 10000, max = 65535 },
-          auto_start = true,
-          log_level = 'warn',
+        port_range = { min = 10000, max = 65535 },
+        auto_start = true,
+        log_level = 'warn',
 
-          terminal = {
-            split_side = 'right',
-            provider = 'snacks',
-            auto_close = true,
-            split_width_percentage = 0.35,
-            cwd_provider = function(ctx)
-              local git_root = vim.fn.systemlist('git -C ' .. vim.fn.shellescape(ctx.file_dir) .. ' rev-parse --show-toplevel')[1]
-              if vim.v.shell_error == 0 and git_root then
-                return git_root
-              end
-              return ctx.file_dir
-            end,
-          },
-
-          diff_opts = {
-            auto_close_on_accept = true,
-            vertical_split = true,
-            open_in_current_tab = true,
-            keep_terminal_focus = true,
-          },
-        }
-
-        require('claudecode').setup(opts)
-
-        local group = vim.api.nvim_create_augroup('ClaudeCodeAutoread', { clear = true })
-        vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI' }, {
-          group = group,
-          callback = function()
-            if vim.fn.mode() ~= 'c' then
-              vim.cmd('checktime')
+        terminal = {
+          split_side = 'right',
+          provider = 'snacks',
+          auto_close = true,
+          split_width_percentage = 0.35,
+          cwd_provider = function(ctx)
+            local git_root = vim.fn.systemlist('git -C ' .. vim.fn.shellescape(ctx.file_dir) .. ' rev-parse --show-toplevel')[1]
+            if vim.v.shell_error == 0 and git_root then
+              return git_root
             end
+            return ctx.file_dir
           end,
-        })
+        },
 
-        vim.opt.autoread = true
-      end)
+        diff_opts = {
+          auto_close_on_accept = true,
+          vertical_split = true,
+          open_in_current_tab = true,
+          keep_terminal_focus = true,
+        },
+      }
+
+      require('claudecode').setup(opts)
+
+      local group = vim.api.nvim_create_augroup('ClaudeCodeAutoread', { clear = true })
+      vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI' }, {
+        group = group,
+        callback = function()
+          if vim.fn.mode() ~= 'c' then
+            vim.cmd('checktime')
+          end
+        end,
+      })
+
+      vim.opt.autoread = true
     end,
   })
 

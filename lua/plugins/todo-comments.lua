@@ -7,13 +7,11 @@ M.specs = {
 }
 
 function M.config()
-  -- Original lazy spec used event = 'VimEnter' → defer setup to UIEnter
-  vim.api.nvim_create_autocmd('UIEnter', {
+  -- Original lazy spec used event = 'VimEnter' → setup runs there
+  vim.api.nvim_create_autocmd('VimEnter', {
     once = true,
     callback = function()
-      vim.schedule(function()
-        require('todo-comments').setup({ signs = false })
-      end)
+      require('todo-comments').setup({ signs = false })
     end,
   })
 end
