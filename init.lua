@@ -1,3 +1,6 @@
+-- Captured for the dashboard's startup-time footer (vim.pack has no lazy.stats).
+vim.g.boot_hrtime = vim.uv.hrtime()
+
 -- Enable the Lua module bytecode cache (Neovim 0.9+) before anything is required.
 -- Biggest single startup win: avoids re-parsing/compiling every Lua module.
 vim.loader.enable()

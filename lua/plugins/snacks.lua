@@ -1,4 +1,5 @@
 local splash_name
+local boot_ms -- cached so dashboard re-renders (resize, splits) keep a stable number
 
 local M = {}
 
@@ -76,7 +77,7 @@ function M.config()
           { icon = " ", key = "g", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
           { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
           { icon = " ", key = "c", desc = "Config", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})" },
-          { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy", enabled = package.loaded.lazy ~= nil },
+          { icon = "󰒲 ", key = "u", desc = "Update Plugins", action = ":lua vim.pack.update()" },
           { icon = " ", key = "q", desc = "Quit", action = ":qa" },
         },
         header = table.concat(splash.frames[1], "\n"),
@@ -89,7 +90,25 @@ function M.config()
           padding = 1,
         },
         { section = 'recent_files', icon = ' ', title = 'Recent Files', indent = 3, padding = 2 },
-        { section = "startup" },
+        -- snacks' builtin 'startup' section hard-requires lazy.nvim
+        -- (lazy.stats), which errored on every render under vim.pack.
+        -- Render the same footer line from vim.pack data instead.
+        {
+          function()
+            boot_ms = boot_ms
+              or (vim.g.boot_hrtime and math.floor((vim.uv.hrtime() - vim.g.boot_hrtime) / 1e4 + 0.5) / 100)
+              or 0
+            return {
+              align = "center",
+              text = {
+                { "⚡ Neovim loaded ", hl = "footer" },
+                { tostring(#vim.pack.get()), hl = "special" },
+                { " plugins in ", hl = "footer" },
+                { boot_ms .. "ms", hl = "special" },
+              },
+            }
+          end,
+        },
       },
     },
     explorer = { enabled = false },
