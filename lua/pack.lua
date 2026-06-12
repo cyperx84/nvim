@@ -1,10 +1,21 @@
 -- Native vim.pack plugin loading (replaces lazy.nvim).
 --
 -- Each lua/plugins/*.lua module declares:
---   M.specs    list of vim.pack.Spec tables ({ src = ..., version = ..., data = { build = ... } })
+--   M.specs    list of vim.pack.Spec tables ({ src = ..., version = ..., data = { ... } })
 --   M.config() runtime setup (setup calls, keymaps, deferral autocmds)
--- All specs are collected into a single vim.pack.add() call (deduped by
--- plugin name), then each module's config runs in the order listed below.
+-- All specs are collected into one vim.pack.add() call (deduped by plugin
+-- name), then each module's config runs in the order listed below.
+--
+-- spec.data is our own convention on top of vim.pack:
+--   data.build  build hook, run by the PackChanged autocmd below:
+--                 ':Cmd' -> ex-command (plugin is packadd'ed first)
+--                 'make' -> shell command run inside the plugin dir
+--                 func   -> called with the PackChanged event
+--   data.lazy   true to install the plugin WITHOUT loading it at startup
+--               (no runtimepath entry, no plugin/ sourcing). Modules load it
+--               on demand with require('pack').load { 'name', ... }.
+
+local M = {}
 
 -- Disable rarely-used built-in runtime plugins (oil/yazi replace netrw).
 vim.g.loaded_gzip = 1
@@ -16,10 +27,6 @@ vim.g.loaded_tutor_mode_plugin = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.loaded_netrw = 1
 
--- Build hooks declared as spec.data.build:
---   ':Cmd' -> ex-command, run after install/update (plugin is packadd'ed first)
---   'make' -> shell command run inside the plugin dir
---   func   -> called with the PackChanged event (plugin is packadd'ed first)
 vim.api.nvim_create_autocmd('PackChanged', {
   group = vim.api.nvim_create_augroup('pack-build-hooks', { clear = true }),
   callback = function(ev)
@@ -44,11 +51,23 @@ vim.api.nvim_create_autocmd('PackChanged', {
   end,
 })
 
+-- Load lazy-installed plugins (spec.data.lazy) on demand. Safe to call with
+-- already-loaded names; each plugin is packadd'ed (runtimepath + plugin/
+-- sourcing) at most once.
+local demand_loaded = {}
+function M.load(names)
+  for _, name in ipairs(names) do
+    if not demand_loaded[name] then
+      demand_loaded[name] = true
+      vim.cmd.packadd(name)
+    end
+  end
+end
+
 -- Config order: colorscheme first (was priority=1000 under lazy), snacks
 -- early (dashboard splash), the rest in lazy's old import order
 -- (alphabetical), with two constraint-driven moves: lspconfig before debug
--- (mason.setup must precede mason-nvim-dap.setup now that debug is eager),
--- and sleuth last.
+-- (mason.setup must precede mason-nvim-dap.setup), and sleuth last.
 local modules = {
   'colorscheme',
   'snacks',
@@ -108,15 +127,38 @@ for _, name in ipairs(modules) do
         specs[#specs + 1] = spec
       else
         -- Same plugin declared by several modules: keep one spec but don't
-        -- lose a pin or build hook that only the duplicate carries.
+        -- lose a pin or build hook that only the duplicate carries. Laziness
+        -- must be unanimous — one eager declaration makes the plugin eager.
         kept.version = kept.version or spec.version
-        kept.data = kept.data or spec.data
+        local kept_lazy = kept.data and kept.data.lazy or false
+        local spec_lazy = spec.data and spec.data.lazy or false
+        if spec.data then
+          kept.data = kept.data or {}
+          kept.data.build = kept.data.build or spec.data.build
+        end
+        if kept.data then
+          kept.data.lazy = (kept_lazy and spec_lazy) or nil
+        end
       end
     end
   end
 end
 
-vim.pack.add(specs, { confirm = false })
+local eager_specs, lazy_specs = {}, {}
+for _, spec in ipairs(specs) do
+  if spec.data and spec.data.lazy then
+    lazy_specs[#lazy_specs + 1] = spec
+  else
+    eager_specs[#eager_specs + 1] = spec
+  end
+end
+
+vim.pack.add(eager_specs, { confirm = false })
+if #lazy_specs > 0 then
+  -- Installed and update-managed like everything else, but a no-op load
+  -- keeps them off the runtimepath until require('pack').load.
+  vim.pack.add(lazy_specs, { confirm = false, load = function() end })
+end
 
 for _, m in ipairs(mods) do
   if m.config then
@@ -126,4 +168,6 @@ for _, m in ipairs(mods) do
     end
   end
 end
+
+return M
 -- vim: ts=2 sts=2 sw=2 et

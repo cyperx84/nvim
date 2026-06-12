@@ -1,26 +1,33 @@
 local M = {}
 
 M.specs = {
-  { src = 'https://github.com/NeogitOrg/neogit' },
-  { src = 'https://github.com/sindrets/diffview.nvim' },
-  { src = 'https://github.com/echasnovski/mini.pick' },
+  { src = 'https://github.com/NeogitOrg/neogit', data = { lazy = true } },
+  { src = 'https://github.com/sindrets/diffview.nvim', data = { lazy = true } },
+  { src = 'https://github.com/echasnovski/mini.pick', data = { lazy = true } },
 }
 
+-- Keys-only under lazy.nvim, and the original spec had no opts/config, so
+-- lazy never called setup(); we preserve that. The plugins stay off the
+-- runtimepath until the first <leader>g* keypress loads them.
+local function neogit(args)
+  return function()
+    require('pack').load { 'neogit', 'diffview.nvim', 'mini.pick' }
+    vim.cmd('Neogit ' .. args)
+  end
+end
+
 function M.config()
-  -- Original lazy spec had no opts/config, so lazy.nvim never called setup();
-  -- we preserve that: keymaps only. The :Neogit command is provided by the
-  -- plugin's plugin/ files, which source after init.lua.
-  vim.keymap.set('n', '<leader>gg', '<cmd>Neogit kind=floating<CR>', { desc = 'Floating' })
-  vim.keymap.set('n', '<leader>gG', '<cmd>Neogit kind=split<CR>', { desc = 'Auto' })
-  vim.keymap.set('n', '<leader>gb', '<cmd>Neogit branch kind=auto<CR>', { desc = 'Branch' })
-  vim.keymap.set('n', '<leader>gB', '<cmd>Neogit branch_config kind=auto<CR>', { desc = 'Branch Config' })
-  vim.keymap.set('n', '<leader>gc', '<cmd>Neogit commit kind=auto<CR>', { desc = 'Commit' })
-  vim.keymap.set('n', '<leader>gd', '<cmd>Neogit diff kind=auto<CR>', { desc = 'Diff' })
-  vim.keymap.set('n', '<leader>gl', '<cmd>Neogit log kind=auto<CR>', { desc = 'Log' })
-  vim.keymap.set('n', '<leader>gs', '<cmd>Neogit stash kind=auto<CR>', { desc = 'Stash' })
-  vim.keymap.set('n', '<leader>gm', '<cmd>Neogit merge kind=auto<CR>', { desc = 'Merge' })
-  vim.keymap.set('n', '<leader>gP', '<cmd>Neogit pull<CR>', { desc = 'Pull' })
-  vim.keymap.set('n', '<leader>gp', '<cmd>Neogit push<CR>', { desc = 'Push' })
+  vim.keymap.set('n', '<leader>gg', neogit 'kind=floating', { desc = 'Floating' })
+  vim.keymap.set('n', '<leader>gG', neogit 'kind=split', { desc = 'Auto' })
+  vim.keymap.set('n', '<leader>gb', neogit 'branch kind=auto', { desc = 'Branch' })
+  vim.keymap.set('n', '<leader>gB', neogit 'branch_config kind=auto', { desc = 'Branch Config' })
+  vim.keymap.set('n', '<leader>gc', neogit 'commit kind=auto', { desc = 'Commit' })
+  vim.keymap.set('n', '<leader>gd', neogit 'diff kind=auto', { desc = 'Diff' })
+  vim.keymap.set('n', '<leader>gl', neogit 'log kind=auto', { desc = 'Log' })
+  vim.keymap.set('n', '<leader>gs', neogit 'stash kind=auto', { desc = 'Stash' })
+  vim.keymap.set('n', '<leader>gm', neogit 'merge kind=auto', { desc = 'Merge' })
+  vim.keymap.set('n', '<leader>gP', neogit 'pull', { desc = 'Pull' })
+  vim.keymap.set('n', '<leader>gp', neogit 'push', { desc = 'Push' })
 end
 
 return M

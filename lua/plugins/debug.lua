@@ -1,23 +1,27 @@
 local M = {}
 
 M.specs = {
-  { src = 'https://github.com/mfussenegger/nvim-dap' },
-  { src = 'https://github.com/rcarriga/nvim-dap-ui' },
-  { src = 'https://github.com/nvim-neotest/nvim-nio' },
+  -- mason.nvim stays eager: it is shared with (and set up by) lspconfig.
+  { src = 'https://github.com/mfussenegger/nvim-dap', data = { lazy = true } },
+  { src = 'https://github.com/rcarriga/nvim-dap-ui', data = { lazy = true } },
+  { src = 'https://github.com/nvim-neotest/nvim-nio', data = { lazy = true } },
   { src = 'https://github.com/williamboman/mason.nvim' },
-  { src = 'https://github.com/jay-babu/mason-nvim-dap.nvim' },
-  { src = 'https://github.com/leoluz/nvim-dap-go' },
+  { src = 'https://github.com/jay-babu/mason-nvim-dap.nvim', data = { lazy = true } },
+  { src = 'https://github.com/leoluz/nvim-dap-go', data = { lazy = true } },
 }
 
 -- The whole DAP stack was keys-only lazy under lazy.nvim and costs ~10ms to
 -- set up (mason-nvim-dap alone is ~6ms), so keep it off the startup path:
--- keymaps are defined eagerly, setup runs on the first debug keypress.
+-- keymaps are defined eagerly; the plugins load and set up on the first
+-- debug keypress.
 local did_setup = false
 local function ensure_setup()
   if did_setup then
     return
   end
   did_setup = true
+
+  require('pack').load { 'nvim-nio', 'nvim-dap', 'nvim-dap-ui', 'mason-nvim-dap.nvim', 'nvim-dap-go' }
 
   local dap = require 'dap'
   local dapui = require 'dapui'
