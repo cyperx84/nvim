@@ -8,12 +8,9 @@ M.specs = {
 
 function M.config()
   -- Original lazy spec used event = 'VimEnter' → setup runs there
-  vim.api.nvim_create_autocmd('VimEnter', {
-    once = true,
-    callback = function()
-      require('todo-comments').setup({ signs = false })
-    end,
-  })
+  require('pack').defer('VimEnter', function()
+    require('todo-comments').setup { signs = false }
+  end)
 end
 
 return M

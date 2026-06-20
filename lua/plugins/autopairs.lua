@@ -6,12 +6,9 @@ M.specs = {
 
 function M.config()
   -- Originally lazy-loaded on InsertEnter; preserve that trigger.
-  vim.api.nvim_create_autocmd('InsertEnter', {
-    once = true,
-    callback = function()
-      require('nvim-autopairs').setup {}
-    end,
-  })
+  require('pack').defer('InsertEnter', function()
+    require('nvim-autopairs').setup {}
+  end)
 end
 
 return M

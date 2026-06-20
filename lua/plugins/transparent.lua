@@ -6,8 +6,16 @@
 local on = true
 local saved = {}
 local groups = {
-  'Normal', 'NormalNC', 'LineNr', 'NonText', 'SignColumn',
-  'CursorLine', 'CursorLineNr', 'StatusLine', 'StatusLineNC', 'EndOfBuffer',
+  'Normal',
+  'NormalNC',
+  'LineNr',
+  'NonText',
+  'SignColumn',
+  'CursorLine',
+  'CursorLineNr',
+  'StatusLine',
+  'StatusLineNC',
+  'EndOfBuffer',
 }
 
 local function set(transparent)
@@ -31,7 +39,9 @@ M.specs = {
 }
 
 function M.config()
-  vim.keymap.set('n', '<leader>tt', function() set(not on) end, { desc = 'Transparent Toggle' })
+  vim.keymap.set('n', '<leader>tt', function()
+    set(not on)
+  end, { desc = 'Transparent Toggle' })
 
   local function snapshot()
     for _, g in ipairs(groups) do

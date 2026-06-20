@@ -82,7 +82,7 @@ function M.config()
     },
     float = {
       padding = 2,
-      max_width = 0.5,  -- 80% of screen width
+      max_width = 0.5, -- 80% of screen width
       max_height = 0.5, -- 80% of screen height
       border = 'rounded',
     },
@@ -110,13 +110,12 @@ function M.config()
       list = false,
       conceallevel = 2,
       concealcursor = 'nvic',
-
     },
   }
 
   -- Make the float window background transparent
   vim.api.nvim_set_hl(0, 'NormalFloat', {
-    bg = 'NONE'      -- Transparent background for float windows
+    bg = 'NONE', -- Transparent background for float windows
   })
 
   -- Force transparent background for Oil float windows

@@ -37,7 +37,13 @@ done
 [ "$syntax_bad" = 0 ] && pass "syntax sweep (init.lua, pack.lua, $(/bin/ls lua/plugins/*.lua | wc -l | tr -d ' ') modules)"
 
 # --------------------------------------------------------- 2. headless boot
-boot_out=$(nvim --headless +'qa!' 2>&1 | grep -v '^vim\.pack:' | grep -v '^\[nvim-treesitter' || true)
+# Drop benign vim.pack progress (install/update chatter on first boot) and
+# nvim-treesitter notices, but KEEP vim.pack lines that look like errors so a
+# failed clone/fetch is not silently swallowed.
+boot_out=$(nvim --headless +'qa!' 2>&1 \
+  | grep -v '^\[nvim-treesitter' \
+  | awk 'tolower($0) ~ /error|fail|conflict|cannot|unable|not found/ || $0 !~ /^vim\.pack:/' \
+  || true)
 if [ -n "$(printf %s "$boot_out" | tr -d '[:space:]')" ]; then
   fail "headless boot produced output: $boot_out"
 else
@@ -133,6 +139,31 @@ step "InsertEnter configs (autopairs, supermaven)"
 rpc 'execute("lua require(\"oil\").toggle_float()")' >/dev/null; sleep 1
 step "oil float open"
 rpc 'execute("lua require(\"oil\").toggle_float()")' >/dev/null; sleep 1
+
+# ---------------------------------------------------- lazy-load keymap targets
+# Plugins behind data.lazy never load at boot, so a wrong name in a module's
+# require('pack').load{...} list (or a setup error) escapes every check above —
+# the user only finds out on the keypress days later. Exercise each lazy module's
+# real load list + require its public modules here, plus the commands the
+# keymaps invoke directly, so a broken name fails CI instead of in daily use.
+LAZY_CHECK="luaeval(\"(function() local pack=require('pack') local groups={ {{'harpoon'},{'harpoon'}}, {{'git-worktree.nvim'},{'git-worktree'}}, {{'neogit','diffview.nvim'},{'diffview'}}, {{'nvim-nio','nvim-dap','nvim-dap-ui','mason-nvim-dap.nvim','nvim-dap-go'},{'nio','dap','dapui','mason-nvim-dap','dap-go'}}, {{'img-clip.nvim'},{'img-clip'}} } local errs={} for _,g in ipairs(groups) do local ok,e=pcall(pack.load,g[1]) if not ok then errs[#errs+1]='load '..table.concat(g[1],',')..': '..tostring(e) end for _,m in ipairs(g[2]) do local rok,rerr=pcall(require,m) if not rok then errs[#errs+1]='require '..m..': '..tostring(rerr) end end end if vim.fn.exists(':Neogit')~=2 then errs[#errs+1]='no :Neogit after load' end if vim.fn.exists(':PasteImage')~=2 then errs[#errs+1]='no :PasteImage after load' end return #errs==0 and 'ok' or table.concat(errs,' | ') end)()\")"
+lazy_out=$(rpc "$LAZY_CHECK")
+if [ "$lazy_out" = "ok" ]; then
+  pass "lazy-load targets (harpoon, git-worktree, neogit/diffview, dap stack, img-clip)"
+else
+  fail "lazy-load: $lazy_out"
+fi
+
+# Auto-coverage: every data.lazy plugin (from pack.M.lazy) must packadd cleanly.
+# This syncs itself — a new lazy plugin is checked here without editing the test,
+# even if the curated require/command list above isn't updated for it.
+ALL_LAZY="luaeval(\"(function() local pack=require('pack') local errs={} for _,n in ipairs(pack.lazy or {}) do local ok,e=pcall(pack.load,{n}) if not ok then errs[#errs+1]=n..': '..tostring(e) end end return #errs==0 and 'ok' or table.concat(errs,' | ') end)()\")"
+all_lazy_out=$(rpc "$ALL_LAZY")
+if [ "$all_lazy_out" = "ok" ]; then
+  pass "all data.lazy specs packadd cleanly ($(rpc 'luaeval("#(require(\"pack\").lazy or {})")') plugins)"
+else
+  fail "lazy spec packadd: $all_lazy_out"
+fi
 
 if [ "$WITH_CLAUDE" = 1 ]; then
   rpc 'execute("ClaudeCode")' >/dev/null; sleep 4

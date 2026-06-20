@@ -32,7 +32,7 @@ local function send_all_buffers()
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
       local bufname = vim.api.nvim_buf_get_name(buf)
-      if bufname ~= '' and not bufname:match('^term://') then
+      if bufname ~= '' and not bufname:match '^term://' then
         table.insert(valid_buffers, bufname)
       end
     end
@@ -43,7 +43,7 @@ local function send_all_buffers()
     return
   end
 
-  local claudecode = require('claudecode')
+  local claudecode = require 'claudecode'
   for _, bufname in ipairs(valid_buffers) do
     local ok, err = pcall(claudecode.send_at_mention, bufname, nil, nil)
     if not ok then
@@ -69,7 +69,7 @@ function M.config()
     once = true,
     callback = vim.schedule_wrap(function()
       local opts = {
-        terminal_cmd = vim.fn.expand('~/.local/bin/claude') .. ' --dangerously-skip-permissions',
+        terminal_cmd = vim.fn.expand '~/.local/bin/claude' .. ' --dangerously-skip-permissions',
 
         port_range = { min = 10000, max = 65535 },
         auto_start = true,
@@ -104,7 +104,7 @@ function M.config()
         group = group,
         callback = function()
           if vim.fn.mode() ~= 'c' then
-            vim.cmd('checktime')
+            vim.cmd 'checktime'
           end
         end,
       })

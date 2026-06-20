@@ -45,8 +45,12 @@ function M.config()
       end
       if not package.loaded['nvim-treesitter.configs'] then
         package.loaded['nvim-treesitter.configs'] = {
-          is_enabled = function() return true end,
-          get_module = function() return {} end,
+          is_enabled = function()
+            return true
+          end,
+          get_module = function()
+            return {}
+          end,
         }
       end
 
@@ -66,18 +70,18 @@ function M.config()
           layout_config = {
             horizontal = {
               prompt_position = 'top',
-              width = 0.8,         -- 80% of screen width (matches Oil.nvim)
-              height = 0.8,        -- 80% of screen height (matches Oil.nvim)
-              preview_width = 0.6,  -- Preview takes 60% of the window
-              preview_cutoff = 1,   -- Always show preview
+              width = 0.8, -- 80% of screen width (matches Oil.nvim)
+              height = 0.8, -- 80% of screen height (matches Oil.nvim)
+              preview_width = 0.6, -- Preview takes 60% of the window
+              preview_cutoff = 1, -- Always show preview
             },
           },
 
           -- Border styling
           borderchars = {
-            prompt  = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
-            results = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
-            preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+            prompt = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
+            results = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
+            preview = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
           },
 
           sorting_strategy = 'ascending',
@@ -106,7 +110,7 @@ function M.config()
       }
 
       -- load extensions if available
-      for _, ext in ipairs({ 'fzf', 'ui-select', 'obsidian', 'git_worktree' }) do
+      for _, ext in ipairs { 'fzf', 'ui-select', 'obsidian', 'git_worktree' } do
         pcall(telescope.load_extension, ext)
       end
 

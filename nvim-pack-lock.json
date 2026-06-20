@@ -10,7 +10,7 @@
       "version": "1.0.0 - 2.0.0"
     },
     "claudecode.nvim": {
-      "rev": "7b8b7090c16f4151401a281741a4bf37050ebd26",
+      "rev": "bcb3fe205efe88771e8801d0a99b6fcb0a982bbb",
       "src": "https://github.com/coder/claudecode.nvim"
     },
     "conform.nvim": {
@@ -38,7 +38,7 @@
       "src": "https://github.com/ThePrimeagen/git-worktree.nvim"
     },
     "gitsigns.nvim": {
-      "rev": "25050e4ed39e628282831d4cbecb1850454ce915",
+      "rev": "2038c666bd9d8a0b7349a0b6ee00dc83104b9ecf",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
     "harpoon": {
@@ -63,7 +63,7 @@
       "src": "https://github.com/nvim-lualine/lualine.nvim"
     },
     "mason-lspconfig.nvim": {
-      "rev": "0a695750d747db1e7e70bcf0267ef8951c95fc83",
+      "rev": "21c5b3ebeaa0412e28096bb0701434c51c1fbf76",
       "src": "https://github.com/williamboman/mason-lspconfig.nvim"
     },
     "mason-nvim-dap.nvim": {
@@ -75,7 +75,7 @@
       "src": "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim"
     },
     "mason.nvim": {
-      "rev": "16ba83bfc8a25f52bb545134f5bee082b195c460",
+      "rev": "2a6940af80375532e5e9e7c1f2fc6319a1b7a69d",
       "src": "https://github.com/williamboman/mason.nvim"
     },
     "milli.nvim": {
@@ -83,15 +83,15 @@
       "src": "https://github.com/amansingh-afk/milli.nvim"
     },
     "mini.icons": {
-      "rev": "520995f1d75da0e4cc901ee95080b1ff2bc46b94",
+      "rev": "e56797f90192d81f1fda02e662fc3e8e3d775027",
       "src": "https://github.com/echasnovski/mini.icons"
     },
     "mini.nvim": {
-      "rev": "ff8b3580935818ef2f21bdd651f057a2ae071eab",
+      "rev": "ecb05c524a99490c95a8862eb5cb09b1e629ed42",
       "src": "https://github.com/echasnovski/mini.nvim"
     },
     "mini.pick": {
-      "rev": "1ffba38c7221669d3da7792d4bbe1c9761075f4d",
+      "rev": "8c1f75f8ddd8c9f75d07ed2ab5718d2c3cb65a66",
       "src": "https://github.com/echasnovski/mini.pick"
     },
     "monokai-pro.nvim": {
@@ -99,7 +99,7 @@
       "src": "https://github.com/loctvl842/monokai-pro.nvim"
     },
     "neogit": {
-      "rev": "99326a1310fb2d616b455d2fd16d01bf00682f06",
+      "rev": "828dd073e6ad180fdb5c1603c7ad7f68a384c40b",
       "src": "https://github.com/NeogitOrg/neogit"
     },
     "neoscroll.nvim": {
@@ -135,7 +135,7 @@
       "src": "https://github.com/brenoprata10/nvim-highlight-colors"
     },
     "nvim-lspconfig": {
-      "rev": "ed19590a3a9792901553c388d1aadafce012f80d",
+      "rev": "bfcc0171a43f22afa61d927ffe9fcb6cb85dc99e",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-nio": {
@@ -169,7 +169,7 @@
       "src": "https://github.com/stevearc/oil.nvim"
     },
     "opencode.nvim": {
-      "rev": "6230d81c452cd8db06917040a243b1ddc4725de1",
+      "rev": "c386c77db37bb4f6dd074cf35f336f677d20fc5f",
       "src": "https://github.com/NickvanDyke/opencode.nvim"
     },
     "plenary.nvim": {
@@ -181,7 +181,7 @@
       "src": "https://github.com/kevinhwang91/promise-async"
     },
     "render-markdown.nvim": {
-      "rev": "5adf0895310c1904e5abfaad40a2baad7fe44a07",
+      "rev": "f422cb5c6855f150e2ddcfaf44e7157b98b34f6a",
       "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim"
     },
     "snacks.nvim": {
@@ -214,7 +214,7 @@
       "src": "https://github.com/folke/tokyonight.nvim"
     },
     "transparent.nvim": {
-      "rev": "8ac59883de84e9cd1850ea25cf087031c5ba7d54",
+      "rev": "e00ca1cf09caef575edf8da7e5a8b9193893b4c7",
       "src": "https://github.com/xiyaowong/transparent.nvim"
     },
     "uv.nvim": {

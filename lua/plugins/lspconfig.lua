@@ -12,22 +12,13 @@ M.specs = {
 function M.config()
   -- lazydev.nvim: was ft = 'lua' under lazy.nvim; keep the FileType gate.
   -- NOTE: lazydev may assume lazy.nvim internals; verify at boot.
-  vim.api.nvim_create_autocmd('FileType', {
-    pattern = 'lua',
-    once = true,
-    callback = function(ev)
-      require('lazydev').setup {
-        library = {
-          { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
-        },
-      }
-      vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(ev.buf) then
-          vim.api.nvim_exec_autocmds('FileType', { buffer = ev.buf, modeline = false })
-        end
-      end)
-    end,
-  })
+  require('pack').defer('FileType', function()
+    require('lazydev').setup {
+      library = {
+        { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
+      },
+    }
+  end, { pattern = 'lua' })
 
   -- Mason (LSP/tool installer) is kept off the startup critical path: it loads
   -- on its own commands, and the installer bridges are required lazily from the
@@ -36,9 +27,12 @@ function M.config()
   -- the installer bridges below are still deferred via vim.schedule.)
   require('mason').setup {}
 
-  -- LSP progress UI: only needed once a language server attaches.
-  -- (was event = 'LspAttach' under lazy.nvim; set up eagerly now)
-  require('fidget').setup {}
+  -- LSP progress UI: only needed once a language server attaches, so defer
+  -- setup to the first LspAttach (was event = 'LspAttach' under lazy.nvim) —
+  -- no-LSP/dashboard-only startups never pay for it.
+  require('pack').defer('LspAttach', function()
+    require('fidget').setup {}
+  end)
 
   -- nvim-lspconfig (eager: LSP stays on the startup path by user preference)
   vim.api.nvim_create_autocmd('LspAttach', {
@@ -86,10 +80,12 @@ function M.config()
             local filetype = vim.bo[event.buf].filetype
 
             -- Skip special buffers (dashboard, codecompanion, terminals, etc.)
-            if filetype == 'snacks_dashboard' or
-               filetype == 'codecompanion' or
-               filetype == 'codecompanion-chat' or
-               (buftype ~= '' and buftype ~= 'acwrite') then
+            if
+              filetype == 'snacks_dashboard'
+              or filetype == 'codecompanion'
+              or filetype == 'codecompanion-chat'
+              or (buftype ~= '' and buftype ~= 'acwrite')
+            then
               return
             end
 
@@ -159,11 +155,7 @@ function M.config()
     },
   }
 
-  local capabilities = vim.tbl_deep_extend(
-    'force',
-    vim.lsp.protocol.make_client_capabilities(),
-    require('blink.cmp').get_lsp_capabilities()
-  )
+  local capabilities = vim.tbl_deep_extend('force', vim.lsp.protocol.make_client_capabilities(), require('blink.cmp').get_lsp_capabilities())
   -- Enable folding range for nvim-ufo
   capabilities.textDocument.foldingRange = {
     dynamicRegistration = false,

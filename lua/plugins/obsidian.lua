@@ -42,9 +42,9 @@ local function rename_note()
 
     -- Update frontmatter fields
     for i = 1, #lines do
-      if lines[i]:match('^id:') then
+      if lines[i]:match '^id:' then
         lines[i] = 'id: ' .. new_id
-      elseif lines[i]:match('^title:') then
+      elseif lines[i]:match '^title:' then
         lines[i] = 'title: ' .. new_name
       end
     end
@@ -86,7 +86,7 @@ end
 M.specs = {
   {
     src = 'https://github.com/obsidian-nvim/obsidian.nvim',
-    version = vim.version.range('*'),
+    version = vim.version.range '*',
   },
 }
 
@@ -101,7 +101,7 @@ function M.config()
       -- =========================================================================
       -- CORE SETUP
       -- =========================================================================
-      require('obsidian').setup({
+      require('obsidian').setup {
         -- Workspaces
         -- Specific vaults come first so first-match resolution picks them for
         -- their own notes. 'notes' is a flexible catch-all: drop notes in any
@@ -109,9 +109,9 @@ function M.config()
         -- leaving code repos, dotfiles, and ~/.config untouched. To relocate your
         -- notes later, just change this one path.
         workspaces = {
-          { name = 'klaw', path = vim.fn.expand('~/.openclaw/workspace/vault') },
-          { name = 'cyperx', path = vim.fn.expand('~/Library/Mobile Documents/iCloud~md~obsidian/Documents/cyperx') },
-          { name = 'notes', path = vim.fn.expand('~/notes') },
+          { name = 'klaw', path = vim.fn.expand '~/.openclaw/workspace/vault' },
+          { name = 'cyperx', path = vim.fn.expand '~/Library/Mobile Documents/iCloud~md~obsidian/Documents/cyperx' },
+          { name = 'notes', path = vim.fn.expand '~/notes' },
         },
 
         -- Daily notes
@@ -157,7 +157,7 @@ function M.config()
           enabled = true,
 
           func = function(note)
-            local now = os.date('%Y-%m-%d %H:%M')
+            local now = os.date '%Y-%m-%d %H:%M'
             local out = {
               id = note.id,
               title = note.title or '',
@@ -189,7 +189,7 @@ function M.config()
         attachments = {
           folder = 'assets/imgs',
           img_name_func = function()
-            return os.date('%Y-%m-%d-%H%M%S')
+            return os.date '%Y-%m-%d-%H%M%S'
           end,
           img_text_func = function(path)
             local filename = vim.fn.fnamemodify(path.filename, ':t')
@@ -217,7 +217,7 @@ function M.config()
         ui = { enable = false },
 
         legacy_commands = false,
-      })
+      }
 
       -- =========================================================================
       -- MARKDOWN FILE SETTINGS & KEYMAPS
@@ -243,9 +243,9 @@ function M.config()
           -- Core keymaps
           vim.keymap.set('n', 'gf', function()
             if vim.b.obsidian_buffer then
-              vim.cmd('Obsidian follow_link')
+              vim.cmd 'Obsidian follow_link'
             else
-              vim.cmd('normal! gf')
+              vim.cmd 'normal! gf'
             end
           end, { buffer = true, desc = 'Follow link under cursor' })
           vim.keymap.set('n', '<cr>', function()
@@ -262,7 +262,7 @@ function M.config()
           end, vim.tbl_extend('force', opts, { desc = '[O]bsidian Toggle [C]heckbox' }))
 
           vim.keymap.set('v', '<leader>oc', function()
-            toggle_checkboxes_range(vim.fn.line('v'), vim.fn.line('.'))
+            toggle_checkboxes_range(vim.fn.line 'v', vim.fn.line '.')
           end, vim.tbl_extend('force', opts, { desc = '[O]bsidian Toggle [C]heckbox (Visual)' }))
 
           -- Note operations
@@ -306,7 +306,7 @@ function M.config()
         pattern = '*.md',
         callback = function()
           if vim.fn.mode() ~= 'c' then
-            vim.cmd('checktime')
+            vim.cmd 'checktime'
           end
         end,
         desc = 'Auto-reload markdown files when changed externally',

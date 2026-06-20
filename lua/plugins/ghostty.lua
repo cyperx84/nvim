@@ -5,7 +5,7 @@ local M = {}
 M.specs = {}
 
 function M.config()
-  vim.opt.rtp:append('/Applications/Ghostty.app/Contents/Resources/vim/vimfiles/')
+  vim.opt.rtp:append '/Applications/Ghostty.app/Contents/Resources/vim/vimfiles/'
 end
 
 return M

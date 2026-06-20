@@ -64,49 +64,86 @@ function M.load(names)
   end
 end
 
--- Config order: colorscheme first (was priority=1000 under lazy), snacks
--- early (dashboard splash), the rest in lazy's old import order
--- (alphabetical), with two constraint-driven moves: lspconfig before debug
--- (mason.setup must precede mason-nvim-dap.setup), and sleuth last.
-local modules = {
-  'colorscheme',
-  'snacks',
-  'autopairs',
-  'claude',
-  'cmp',
-  'conform',
-  'lspconfig',
-  'debug',
-  'dressing',
-  'ghostty',
-  'git-worktree',
-  'gitsigns',
-  'harpoon',
-  'highlight-colors',
-  'image',
-  'indent_line',
-  'lualine',
-  'mini',
-  'neo-git',
-  'neoscroll',
-  'noice',
-  'notify',
-  'nvim-ufo',
-  'obsidian',
-  'oil',
-  'opencode',
-  'render-markdown',
-  'super-maven',
-  'telescope',
-  'tmux',
-  'todo-comments',
-  'transparent',
-  'treesitter',
-  'uv',
-  'web-dev-icons',
-  'which-key',
-  'sleuth',
+-- Defer `fn` until the first time any of `events` fires (once), replacing the
+-- per-module `nvim_create_autocmd(..., { once = true })` boilerplate that was
+-- copy-pasted across a dozen modules. For buffer-scoped events the triggering
+-- event is re-fired on that buffer after `fn` runs, so a plugin whose setup()
+-- registers per-buffer autocmds still processes the file that was already open
+-- when it loaded (exactly what lazy.nvim did when it loaded a plugin on an
+-- event). opts.pattern restricts the autocmd (e.g. a FileType gate).
+local buf_events = {
+  BufRead = true,
+  BufReadPre = true,
+  BufReadPost = true,
+  BufNewFile = true,
+  FileType = true,
 }
+local refired = {} -- collapses duplicate re-fires of the same event+buffer
+function M.defer(events, fn, opts)
+  opts = opts or {}
+  vim.api.nvim_create_autocmd(events, {
+    once = true,
+    pattern = opts.pattern,
+    callback = function(ev)
+      fn(ev)
+      if buf_events[ev.event] then
+        local k = ev.event .. ':' .. ev.buf
+        if not refired[k] then
+          refired[k] = true
+          vim.schedule(function()
+            refired[k] = nil
+            if vim.api.nvim_buf_is_valid(ev.buf) then
+              vim.api.nvim_exec_autocmds(ev.event, { buffer = ev.buf, modeline = false })
+            end
+          end)
+        end
+      end
+    end,
+  })
+end
+
+-- Modules are auto-discovered from lua/plugins/, so dropping in a new file is
+-- enough — no second place to register it, no silent "forgot the list" gap.
+-- Only the few with real config-order constraints are pinned; everything else
+-- runs alphabetically between them:
+--   colorscheme first — set the theme/highlights before anything renders
+--   snacks early       — owns the dashboard splash + terminal provider that
+--                        claude/opencode reuse
+--   debug last         — its DAP setup needs mason.setup (lspconfig, which sorts
+--                        earlier alphabetically) to have run first
+--   sleuth last        — should observe options set by everything else
+-- (cmp-before-lspconfig, the other constraint, holds for free: both are in the
+-- alphabetical middle and 'cmp' < 'lspconfig'.)
+local order_first = { 'colorscheme', 'snacks' }
+local order_last = { 'debug', 'sleuth' }
+
+local function discover_modules()
+  local pinned = {}
+  for _, n in ipairs(order_first) do
+    pinned[n] = true
+  end
+  for _, n in ipairs(order_last) do
+    pinned[n] = true
+  end
+
+  local middle, seen = {}, {}
+  for _, path in ipairs(vim.api.nvim_get_runtime_file('lua/plugins/*.lua', true)) do
+    local mod = path:match '([^/\\]+)%.lua$'
+    if mod and mod ~= 'init' and not pinned[mod] and not seen[mod] then
+      seen[mod] = true
+      middle[#middle + 1] = mod
+    end
+  end
+  table.sort(middle)
+
+  local modules = {}
+  vim.list_extend(modules, order_first)
+  vim.list_extend(modules, middle)
+  vim.list_extend(modules, order_last)
+  return modules
+end
+
+local modules = discover_modules()
 
 local specs, seen, mods = {}, {}, {}
 for _, name in ipairs(modules) do
@@ -119,25 +156,35 @@ for _, name in ipairs(modules) do
       if type(spec) == 'string' then
         spec = { src = spec }
       end
-      local base = (spec.src:match '([^/]+)$' or spec.src):gsub('%.git$', '')
-      local key = spec.name or base
-      local kept = seen[key]
-      if not kept then
-        seen[key] = spec
-        specs[#specs + 1] = spec
+      if type(spec) ~= 'table' or type(spec.src) ~= 'string' then
+        -- A malformed spec must not abort collection for every later module.
+        vim.notify(('pack: plugins.%s has a spec with no src; skipping it'):format(name), vim.log.levels.WARN)
       else
-        -- Same plugin declared by several modules: keep one spec but don't
-        -- lose a pin or build hook that only the duplicate carries. Laziness
-        -- must be unanimous — one eager declaration makes the plugin eager.
-        kept.version = kept.version or spec.version
-        local kept_lazy = kept.data and kept.data.lazy or false
-        local spec_lazy = spec.data and spec.data.lazy or false
-        if spec.data then
-          kept.data = kept.data or {}
-          kept.data.build = kept.data.build or spec.data.build
-        end
-        if kept.data then
-          kept.data.lazy = (kept_lazy and spec_lazy) or nil
+        local base = (spec.src:match '([^/]+)$' or spec.src):gsub('%.git$', '')
+        local key = spec.name or base
+        local kept = seen[key]
+        if not kept then
+          seen[key] = spec
+          specs[#specs + 1] = spec
+        else
+          -- Same plugin declared by several modules: keep one spec but don't
+          -- lose a pin or build hook that only the duplicate carries. Laziness
+          -- must be unanimous — one eager declaration makes the plugin eager.
+          -- A divergent pin can't be silently dropped on module-list order:
+          -- surface the conflict so the resolution is a deliberate choice.
+          if kept.version and spec.version and not vim.deep_equal(kept.version, spec.version) then
+            vim.notify(('pack: %s declared with conflicting version pins; keeping the first-declared'):format(key), vim.log.levels.WARN)
+          end
+          kept.version = kept.version or spec.version
+          local kept_lazy = kept.data and kept.data.lazy or false
+          local spec_lazy = spec.data and spec.data.lazy or false
+          if spec.data then
+            kept.data = kept.data or {}
+            kept.data.build = kept.data.build or spec.data.build
+          end
+          if kept.data then
+            kept.data.lazy = (kept_lazy and spec_lazy) or nil
+          end
         end
       end
     end
@@ -145,20 +192,39 @@ for _, name in ipairs(modules) do
 end
 
 local eager_specs, lazy_specs = {}, {}
+-- Names of every lazy plugin, exposed for the smoke test to auto-cover: it
+-- packadds each and confirms it loads, so a new data.lazy plugin gets baseline
+-- coverage without anyone updating the test by hand.
+M.lazy = {}
 for _, spec in ipairs(specs) do
   if spec.data and spec.data.lazy then
     lazy_specs[#lazy_specs + 1] = spec
+    M.lazy[#M.lazy + 1] = (spec.src:match '([^/]+)$' or spec.src):gsub('%.git$', '')
   else
     eager_specs[#eager_specs + 1] = spec
   end
 end
 
-vim.pack.add(eager_specs, { confirm = false })
+-- A malformed spec or fatal install error must not take down the whole
+-- config: keep the per-module pcall philosophy here too, so the config loop
+-- below still runs (colorscheme, keymaps, LSP, …) even if a plugin fails.
+local ok_add, add_err = pcall(vim.pack.add, eager_specs, { confirm = false })
+if not ok_add then
+  vim.notify('pack: vim.pack.add failed for eager specs\n' .. tostring(add_err), vim.log.levels.ERROR)
+end
 if #lazy_specs > 0 then
   -- Installed and update-managed like everything else, but a no-op load
   -- keeps them off the runtimepath until require('pack').load.
-  vim.pack.add(lazy_specs, { confirm = false, load = function() end })
+  local ok_lazy, lazy_err = pcall(vim.pack.add, lazy_specs, { confirm = false, load = function() end })
+  if not ok_lazy then
+    vim.notify('pack: vim.pack.add failed for lazy specs\n' .. tostring(lazy_err), vim.log.levels.ERROR)
+  end
 end
+
+-- Make the loader resolvable from module config() bodies (which run just
+-- below and call require('pack').defer/load) without recursively re-requiring
+-- this file mid-load.
+package.loaded['pack'] = M
 
 for _, m in ipairs(mods) do
   if m.config then

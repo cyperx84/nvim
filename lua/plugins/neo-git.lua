@@ -3,7 +3,10 @@ local M = {}
 M.specs = {
   { src = 'https://github.com/NeogitOrg/neogit', data = { lazy = true } },
   { src = 'https://github.com/sindrets/diffview.nvim', data = { lazy = true } },
-  { src = 'https://github.com/echasnovski/mini.pick', data = { lazy = true } },
+  -- mini.pick is provided eagerly by mini.nvim (see plugins/mini.lua), so the
+  -- standalone echasnovski/mini.pick repo is redundant — require('mini.pick')
+  -- already resolves to the mini.nvim copy. Neogit uses telescope/snacks/fzf
+  -- as its picker, so no separate mini.pick dependency is needed here.
 }
 
 -- Keys-only under lazy.nvim, and the original spec had no opts/config, so
@@ -11,7 +14,7 @@ M.specs = {
 -- runtimepath until the first <leader>g* keypress loads them.
 local function neogit(args)
   return function()
-    require('pack').load { 'neogit', 'diffview.nvim', 'mini.pick' }
+    require('pack').load { 'neogit', 'diffview.nvim' }
     vim.cmd('Neogit ' .. args)
   end
 end

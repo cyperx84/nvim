@@ -60,15 +60,19 @@ function M.config()
           end
 
           self.spinner_timer = (vim.uv or vim.loop).new_timer()
-          self.spinner_timer:start(0, 100, vim.schedule_wrap(function()
-            if self.processing then
-              self.spinner_index = (self.spinner_index % spinner_symbols_len) + 1
-              -- Force statusline refresh
-              vim.cmd('redrawstatus')
-            else
-              self:stop_spinner()
-            end
-          end))
+          self.spinner_timer:start(
+            0,
+            100,
+            vim.schedule_wrap(function()
+              if self.processing then
+                self.spinner_index = (self.spinner_index % spinner_symbols_len) + 1
+                -- Force statusline refresh
+                vim.cmd 'redrawstatus'
+              else
+                self:stop_spinner()
+              end
+            end)
+          )
         end
 
         -- Stop spinner animation
@@ -83,7 +87,7 @@ function M.config()
             self.spinner_timer = nil
           end
           self.spinner_index = 1
-          vim.cmd('redrawstatus')
+          vim.cmd 'redrawstatus'
         end
 
         -- Cleanup on component destruction
@@ -139,21 +143,22 @@ function M.config()
               winbar = 1000,
             },
             disabled_filetypes = {
-              statusline = {'NvimTree', 'dashboard', 'TelescopePrompt'},
+              statusline = { 'NvimTree', 'dashboard', 'TelescopePrompt' },
             },
           },
           sections = {
             lualine_a = { 'mode' },
             lualine_b = { 'branch', 'diff', 'diagnostics' },
             lualine_c = {
-              { 'filename',
+              {
+                'filename',
                 path = 1,
                 symbols = {
                   modified = '●',
                   readonly = '🔒',
                   unnamed = '[No Name]',
                   newfile = '[New]',
-                }
+                },
               },
               -- Add breadcrumb navigation if available
               {
@@ -169,7 +174,7 @@ function M.config()
                   return ok and navic.is_available()
                 end,
                 color = { fg = '#a9b1d6' },
-              }
+              },
             },
             lualine_x = {
               -- LSP status

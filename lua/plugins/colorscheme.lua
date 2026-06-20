@@ -1,10 +1,13 @@
--- unokai is a Neovim built-in colorscheme; this entry exists only to run
--- the custom highlight setup at startup with correct priority.
+-- The active colorscheme is the Neovim built-in 'unokai'; M.config() runs the
+-- custom highlight setup directly (pack.lua runs configs in order, colorscheme
+-- first, so no carrier plugin is needed as it was under lazy.nvim). These two
+-- themes are kept installed/update-managed but lazy: off the runtimepath until
+-- explicitly packadd'd, since neither is loaded at startup.
 local M = {}
 
 M.specs = {
-  { src = 'https://github.com/folke/tokyonight.nvim' },
-  { src = 'https://github.com/loctvl842/monokai-pro.nvim' },
+  { src = 'https://github.com/folke/tokyonight.nvim', data = { lazy = true } },
+  { src = 'https://github.com/loctvl842/monokai-pro.nvim', data = { lazy = true } },
 }
 
 function M.config()
