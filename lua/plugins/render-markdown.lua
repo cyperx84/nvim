@@ -11,8 +11,8 @@ M.specs = {
 
 function M.config()
   -- Original lazy spec was ft = 'markdown'; defer setup until the first
-  -- markdown buffer. M.defer re-fires FileType on that buffer so the plugin's
-  -- own FileType handling sees it.
+  -- FileType. M.defer re-fires FileType on every already-open buffer so the
+  -- plugin's own FileType handling sees any markdown files already loaded.
   require('pack').defer('FileType', function()
     vim.api.nvim_set_hl(0, 'RenderMarkdownH1', { fg = '#FB2C36', bold = true })
     vim.api.nvim_set_hl(0, 'RenderMarkdownH2', { fg = '#FF692A', bold = true })

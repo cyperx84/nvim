@@ -67,10 +67,10 @@ end
 -- Defer `fn` until the first time any of `events` fires (once), replacing the
 -- per-module `nvim_create_autocmd(..., { once = true })` boilerplate that was
 -- copy-pasted across a dozen modules. For buffer-scoped events the triggering
--- event is re-fired on that buffer after `fn` runs, so a plugin whose setup()
--- registers per-buffer autocmds still processes the file that was already open
--- when it loaded (exactly what lazy.nvim did when it loaded a plugin on an
--- event). opts.pattern restricts the autocmd (e.g. a FileType gate).
+-- event is re-fired after `fn` runs, so a plugin whose setup() registers
+-- per-buffer autocmds still processes files that were already open when it
+-- loaded (exactly what lazy.nvim did when it loaded a plugin on an event).
+-- opts.pattern restricts the autocmd (e.g. a FileType gate).
 local buf_events = {
   BufRead = true,
   BufReadPre = true,
@@ -78,6 +78,56 @@ local buf_events = {
   BufNewFile = true,
   FileType = true,
 }
+
+-- Does `buf` satisfy autocmd `pattern` for `event`? FileType patterns match
+-- the buffer's filetype; read/new events match its name. `pattern` may be a
+-- string or a list (as nvim_create_autocmd accepts); nil means "any buffer"
+-- (for FileType, any buffer that has a filetype set).
+local function buf_matches(buf, event, pattern)
+  if event == 'FileType' then
+    local ft = vim.bo[buf].filetype
+    if ft == '' then
+      return false
+    end
+    if pattern == nil then
+      return true
+    end
+    for _, p in ipairs(type(pattern) == 'table' and pattern or { pattern }) do
+      if ft == p then
+        return true
+      end
+    end
+    return false
+  end
+  if pattern == nil then
+    return true
+  end
+  local name = vim.api.nvim_buf_get_name(buf)
+  for _, p in ipairs(type(pattern) == 'table' and pattern or { pattern }) do
+    if vim.fn.match(name, vim.fn.glob2regpat(p)) ~= -1 then
+      return true
+    end
+  end
+  return false
+end
+
+-- Re-fire `event` on `buf`. FileType must be re-fired in the buffer's own
+-- context with its filetype as the pattern: a bare `buffer=` re-fire bypasses
+-- filetype routing and runs handlers for the wrong filetype. Other buffer
+-- events route correctly via `buffer=`.
+local function refire(event, buf)
+  if not (vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf)) then
+    return
+  end
+  if event == 'FileType' then
+    vim.api.nvim_buf_call(buf, function()
+      vim.api.nvim_exec_autocmds('FileType', { pattern = vim.bo[buf].filetype, modeline = false })
+    end)
+  else
+    vim.api.nvim_exec_autocmds(event, { buffer = buf, modeline = false })
+  end
+end
+
 local refired = {} -- collapses duplicate re-fires of the same event+buffer
 function M.defer(events, fn, opts)
   opts = opts or {}
@@ -86,16 +136,25 @@ function M.defer(events, fn, opts)
     pattern = opts.pattern,
     callback = function(ev)
       fn(ev)
-      if buf_events[ev.event] then
-        local k = ev.event .. ':' .. ev.buf
-        if not refired[k] then
-          refired[k] = true
-          vim.schedule(function()
-            refired[k] = nil
-            if vim.api.nvim_buf_is_valid(ev.buf) then
-              vim.api.nvim_exec_autocmds(ev.event, { buffer = ev.buf, modeline = false })
-            end
-          end)
+      if not buf_events[ev.event] then
+        return
+      end
+      -- Re-fire the trigger on EVERY buffer already open when we loaded, not
+      -- just ev.buf, so multi-file / session-restore startups (`nvim a b`,
+      -- :argadd, a restored session) get each matching buffer processed by the
+      -- handlers fn() just registered. Idempotent FileType/BufRead handlers
+      -- tolerate the re-fire; opts.pattern keeps the blast radius to buffers
+      -- this plugin actually targets.
+      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(buf) and buf_matches(buf, ev.event, opts.pattern) then
+          local k = ev.event .. ':' .. buf
+          if not refired[k] then
+            refired[k] = true
+            vim.schedule(function()
+              refired[k] = nil
+              refire(ev.event, buf)
+            end)
+          end
         end
       end
     end,

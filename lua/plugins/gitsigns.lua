@@ -7,8 +7,8 @@ M.specs = {
 
 function M.config()
   -- Originally event = { 'BufReadPre', 'BufNewFile' } under lazy.nvim; same
-  -- deferral here. M.defer re-fires the trigger on the originating buffer so
-  -- gitsigns attaches to the first opened file (what lazy.nvim did on load).
+  -- deferral here. M.defer re-fires the trigger on every already-open buffer so
+  -- gitsigns attaches to each opened file (what lazy.nvim did on load).
   require('pack').defer({ 'BufReadPre', 'BufNewFile' }, function()
     require('gitsigns').setup {
       signs = {
