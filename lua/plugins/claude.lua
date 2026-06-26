@@ -69,7 +69,11 @@ function M.config()
     once = true,
     callback = vim.schedule_wrap(function()
       local opts = {
-        terminal_cmd = vim.fn.expand '~/.local/bin/claude' .. ' --dangerously-skip-permissions',
+        -- `env -u TMUX -u TMUX_PANE`: Claude Code downgrades itself to 256-color
+        -- whenever it sees $TMUX (washes the mascot/colors). This launches the
+        -- binary directly, bypassing the shell alias that handles it elsewhere,
+        -- so strip $TMUX here too to keep true 24-bit color.
+        terminal_cmd = 'env -u TMUX -u TMUX_PANE ' .. vim.fn.expand '~/.local/bin/claude' .. ' --dangerously-skip-permissions',
 
         port_range = { min = 10000, max = 65535 },
         auto_start = true,
