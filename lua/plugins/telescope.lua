@@ -150,7 +150,7 @@ function M.config()
         builtin.find_files {
           cwd = vim.fn.resolve(vim.fn.stdpath 'config'),
           follow = true,
-          hidden = false,
+          hidden = true,
         }
       end, { desc = '[S]earch [N]eovim files' })
     end,

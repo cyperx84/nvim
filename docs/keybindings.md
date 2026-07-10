@@ -75,8 +75,8 @@ Migrated to **harpoon2**. Marks are per project.
 
 | Key | Action |
 |-----|--------|
-| `-` | Open Yazi file manager |
-| `<C-e>` | Toggle Oil explorer |
+| `<C-e>` | Toggle Oil explorer (floating) |
+| `-` | Go to parent directory (inside Oil) |
 | `<leader>sf` | Find files (Telescope) |
 | `<leader>sg` | Live grep (Telescope) |
 
@@ -107,7 +107,6 @@ Migrated to **harpoon2**. Marks are per project.
 | Key | Mode | Action |
 |-----|------|--------|
 | `<M-;>` | n | Toggle Claude Code |
-| `<M-c>` | n | CodeCompanion chat |
 | `<M-'>` | n, t | Toggle OpenCode |
 | `<leader>Oa` | n, x | OpenCode: ask about selection/line |
 | `<leader>Ox` | n, x | OpenCode: pick an action |

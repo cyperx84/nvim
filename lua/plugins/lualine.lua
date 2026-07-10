@@ -11,100 +11,6 @@ function M.config()
     once = true,
     callback = function()
       vim.schedule(function()
-        -- Define the custom spinner component with optimized animation
-        local M = require('lualine.component'):extend()
-
-        M.processing = false
-        M.spinner_index = 1
-        M.spinner_timer = nil
-
-        local spinner_symbols = {
-          '⠋',
-          '⠙',
-          '⠹',
-          '⠸',
-          '⠼',
-          '⠴',
-          '⠦',
-          '⠧',
-          '⠇',
-          '⠏',
-        }
-        local spinner_symbols_len = 10
-
-        -- Initializer
-        function M:init(options)
-          M.super.init(self, options)
-
-          local group = vim.api.nvim_create_augroup('CodeCompanionHooks', {})
-
-          vim.api.nvim_create_autocmd({ 'User' }, {
-            pattern = 'CodeCompanionRequest*',
-            group = group,
-            callback = function(request)
-              if request.match == 'CodeCompanionRequestStarted' then
-                self.processing = true
-                self:start_spinner()
-              elseif request.match == 'CodeCompanionRequestFinished' then
-                self.processing = false
-                self:stop_spinner()
-              end
-            end,
-          })
-        end
-
-        -- Start spinner animation with timer
-        function M:start_spinner()
-          if self.spinner_timer then
-            self.spinner_timer:close()
-          end
-
-          self.spinner_timer = (vim.uv or vim.loop).new_timer()
-          self.spinner_timer:start(
-            0,
-            100,
-            vim.schedule_wrap(function()
-              if self.processing then
-                self.spinner_index = (self.spinner_index % spinner_symbols_len) + 1
-                -- Force statusline refresh
-                vim.cmd 'redrawstatus'
-              else
-                self:stop_spinner()
-              end
-            end)
-          )
-        end
-
-        -- Stop spinner animation
-        function M:stop_spinner()
-          if self.spinner_timer then
-            local ok, err = pcall(function()
-              self.spinner_timer:close()
-            end)
-            if not ok then
-              vim.notify('Error stopping spinner: ' .. err, vim.log.levels.WARN)
-            end
-            self.spinner_timer = nil
-          end
-          self.spinner_index = 1
-          vim.cmd 'redrawstatus'
-        end
-
-        -- Cleanup on component destruction
-        function M:destroy()
-          self:stop_spinner()
-        end
-
-        -- Function that runs every time statusline is updated
-        function M:update_status()
-          if self.processing then
-            return spinner_symbols[self.spinner_index]
-          else
-            return nil
-          end
-        end
-
-        -- Now configure lualine with the custom component
         require('lualine').setup {
           options = {
             theme = {
@@ -191,7 +97,6 @@ function M.config()
               { 'encoding', separator = { left = '│' } },
               { 'fileformat', separator = { left = '│' } },
               { 'filetype', separator = { left = '│' } },
-              M, -- Add the spinner component here
               {
                 function()
                   local noice_ok, noice = pcall(require, 'noice')

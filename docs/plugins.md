@@ -1,32 +1,47 @@
 # Plugins
 
-Managed by [lazy.nvim](https://github.com/folke/lazy.nvim). Each plugin lives in
-its own file under `lua/custom/plugins/`. Run `:Lazy` to see the live list,
-load state, and per-plugin triggers; `:Lazy profile` for load times.
+Managed by Neovim's native [`vim.pack`](https://neovim.io/doc/user/pack.html)
+via the loader in `lua/pack.lua` — no lazy.nvim. Each plugin lives in its own
+file under `lua/plugins/`, auto-discovered at startup. See
+[architecture.md](architecture.md) for the module contract and load model.
+
+To inspect what's installed: `:lua = vim.pack.get()`. To update:
+`:lua vim.pack.update()`. There is no `:Lazy`.
 
 ## Load strategy
 
-Plugins this config explicitly tunes for startup (see
-[performance.md](performance.md)):
+Two kinds of deferral (full detail in [performance.md](performance.md)):
 
-| Plugin | Loads on | File |
-|--------|----------|------|
-| harpoon | keypress (`<M-…>`) | `harpoon.lua` |
-| git-worktree | keypress (`<leader>gw…`) | `git-worktree.lua` |
-| opencode | keypress (`<leader>O…`, `go`) | `opencode.lua` |
-| Navigator | keypress (`<C-h/j/k/l>`) | `tmux.lua` |
-| gitsigns | file open (`BufReadPre`) | `gitsigns.lua` |
-| indent-blankline | file open (`BufReadPost`) | `indent_line.lua` |
-| nvim-highlight-colors | file open (`BufReadPost`) | `highlight-colors.lua` |
-| vim-sleuth | file open (`BufReadPre`) | `lazy-plugins.lua` |
-| lualine | `VeryLazy` | `lualine.lua` |
-| uv.nvim | `VeryLazy` | `uv.lua` |
+**Installed but not loaded until needed** (`data.lazy` + `require('pack').load`):
+
+| Plugin(s) | Loads on | File |
+|-----------|----------|------|
+| harpoon (harpoon2) | first `<M-…>` harpoon key | `harpoon.lua` |
+| git-worktree | first `<leader>gw…` key | `git-worktree.lua` |
+| neogit + diffview | first Neogit `<leader>g…` key | `neo-git.lua` |
+| img-clip | `<leader>pi` (paste image) | `image.lua` |
+| nvim-dap stack | first DAP key | `debug.lua` |
+| tokyonight, monokai-pro | colorscheme switch | `colorscheme.lua` |
+
+**Loaded eagerly, config deferred** (`require('pack').defer(events, fn)` or an
+inline autocmd):
+
+| Plugin | Config runs on | File |
+|--------|----------------|------|
 | supermaven | `InsertEnter` | `super-maven.lua` |
+| autopairs | `InsertEnter` | `autopairs.lua` |
+| conform | `BufReadPre`/`BufNewFile` | `conform.lua` |
+| gitsigns | `BufReadPre`/`BufNewFile` | `gitsigns.lua` |
+| indent-blankline | `BufReadPost`/`BufNewFile` | `indent_line.lua` |
+| nvim-highlight-colors | `BufReadPost`/`BufNewFile` | `highlight-colors.lua` |
+| nvim-ufo | `BufReadPost` | `nvim-ufo.lua` |
+| render-markdown | `FileType` | `render-markdown.lua` |
 | fidget | `LspAttach` | `lspconfig.lua` |
-| mason | command (`:Mason*`) | `lspconfig.lua` |
+| lualine, mini, noice, uv, neoscroll, dressing, claude | `UIEnter` | (respective files) |
+| which-key, todo-comments, telescope | `VimEnter` | (respective files) |
 
-Kept eager on purpose: `tokyonight`, `transparent`, `snacks`, `oil`,
-`nvim-treesitter`, `nvim-lspconfig`, `blink.cmp`. See
+Kept eager on purpose: `colorscheme`/highlights, `transparent`, `snacks`,
+`oil`, `nvim-treesitter`, `nvim-lspconfig` (`vim.lsp.enable`), `blink.cmp`. See
 [performance.md](performance.md#what-is-intentionally-kept-eager-and-why).
 
 ## By category
@@ -45,12 +60,11 @@ Kept eager on purpose: `tokyonight`, `transparent`, `snacks`, `oil`,
 - **friendly-snippets** — snippet collection
 
 ### AI assistance
-- **CodeCompanion**, **Claude Code**, **Copilot**, **Supermaven**, **OpenCode**
+- **Claude Code**, **OpenCode**, **Supermaven**
 
 ### File navigation
-- **oil.nvim** — edit the filesystem like a buffer
-- **yazi** — TUI file manager
-- **telescope** — fuzzy finder
+- **oil.nvim** — edit the filesystem like a buffer (netrw replacement)
+- **telescope** — fuzzy finder (+ fzf-native, ui-select)
 - **harpoon** — quick file marks (harpoon2)
 
 ### Git
@@ -59,7 +73,9 @@ Kept eager on purpose: `tokyonight`, `transparent`, `snacks`, `oil`,
 - **git-worktree** — worktree management (via Telescope)
 
 ### UI / theme
-- **tokyonight** — colorscheme
+- Active colorscheme is the built-in **`unokai`** (custom highlights in
+  `colorscheme.lua`); **tokyonight** & **monokai-pro** are installed lazily as
+  alternates
 - **transparent** — transparent backgrounds
 - **snacks** — dashboard, pickers, QoL utilities
 - **lualine** — statusline
@@ -68,7 +84,8 @@ Kept eager on purpose: `tokyonight`, `transparent`, `snacks`, `oil`,
 
 ### Markdown / notes
 - **obsidian.nvim** — vault integration
-- **render-markdown** / **markview** — in-buffer markdown rendering
+- **render-markdown** — in-buffer markdown rendering
+- **img-clip** (lazy) — paste images into notes
 
 ### Navigation / editing
 - **Navigator.nvim** — split/tmux pane navigation
@@ -76,4 +93,5 @@ Kept eager on purpose: `tokyonight`, `transparent`, `snacks`, `oil`,
 - **mini.\***, **nvim-autopairs**, **nvim-ufo** (folding), **vim-sleuth**
   (indent detection)
 
-> The exact set evolves — `:Lazy` is the source of truth.
+> The exact set evolves — `lua/plugins/` and `:lua = vim.pack.get()` are the
+> source of truth.

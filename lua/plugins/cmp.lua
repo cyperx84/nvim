@@ -35,8 +35,14 @@ function M.config()
 
     sources = {
       default = { 'lsp', 'path', 'snippets', 'buffer' },
+      -- quickgd.nvim's Godot-shader completion (see plugins.godot); scoped to
+      -- gdshader/gdshaderinc only, not appended to every buffer's sources.
       per_filetype = {
-        codecompanion = { 'codecompanion' },
+        gdshader = { inherit_defaults = true, 'quickgd' },
+        gdshaderinc = { inherit_defaults = true, 'quickgd' },
+      },
+      providers = {
+        quickgd = { name = 'quickgd', module = 'quickgd.blink' },
       },
     },
 

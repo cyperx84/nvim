@@ -72,6 +72,24 @@ local function ensure_setup()
       detached = vim.fn.has 'win32' == 0,
     },
   }
+
+  -- Godot 4 ships a Debug Adapter Protocol server (port 6006 by default,
+  -- Editor Settings > Network > Debug Adapter) as soon as the project is
+  -- open in the editor -- no plugin needed on the Godot side.
+  dap.adapters.godot = {
+    type = 'server',
+    host = '127.0.0.1',
+    port = tonumber(os.getenv 'GDScript_Debug_Port') or 6006,
+  }
+  dap.configurations.gdscript = {
+    {
+      type = 'godot',
+      request = 'launch',
+      name = 'Launch scene',
+      project = '${workspaceFolder}',
+      launch_scene = true,
+    },
+  }
 end
 
 function M.config()

@@ -74,6 +74,12 @@ function M.config()
     'latex',
     'regex',
 
+    -- Game development
+    'gdscript',
+    'gdshader',
+    'godot_resource', -- .tscn / .tres / project.godot (vim filetype: gdresource)
+    'glsl', -- not used for highlighting; quickgd.nvim's shader completion parses with it directly
+
     -- Other useful
     'git_config',
     'git_rebase',

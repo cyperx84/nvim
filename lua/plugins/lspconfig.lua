@@ -79,13 +79,8 @@ function M.config()
             local buftype = vim.bo[event.buf].buftype
             local filetype = vim.bo[event.buf].filetype
 
-            -- Skip special buffers (dashboard, codecompanion, terminals, etc.)
-            if
-              filetype == 'snacks_dashboard'
-              or filetype == 'codecompanion'
-              or filetype == 'codecompanion-chat'
-              or (buftype ~= '' and buftype ~= 'acwrite')
-            then
+            -- Skip special buffers (dashboard, terminals, etc.)
+            if filetype == 'snacks_dashboard' or (buftype ~= '' and buftype ~= 'acwrite') then
               return
             end
 
@@ -195,6 +190,7 @@ function M.config()
   local ensure_installed = vim.tbl_keys(servers or {})
   vim.list_extend(ensure_installed, {
     'stylua', -- Used to format Lua code
+    'gdtoolkit', -- gdformat + gdlint for GDScript (plugins.conform / plugins.godot)
   })
 
   -- Apply capabilities to all servers globally (nvim 0.11+ API)

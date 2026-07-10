@@ -33,6 +33,7 @@ function M.config()
         sh = { 'shfmt' },
         go = { 'gofmt' },
         xml = { 'xmllint' },
+        gdscript = { 'gdformat' },
       },
     }
   end)

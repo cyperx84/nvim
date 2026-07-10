@@ -120,7 +120,6 @@ function M.config()
           date_format = '%Y-%m-%d',
           alias_format = '%B %-d, %Y',
           default_tags = { 'daily-note' },
-          template = 'daily.md',
         },
 
         -- Completion (served by the built-in obsidian-ls LSP server, surfaced
@@ -132,13 +131,6 @@ function M.config()
 
         -- Note creation
         new_notes_location = 'current_dir',
-
-        -- Templates
-        templates = {
-          folder = 'templates',
-          date_format = '%Y-%m-%d',
-          time_format = '%H:%M',
-        },
 
         -- Note ID: URL-friendly slugs
         note_id_func = function(title)
@@ -160,6 +152,7 @@ function M.config()
             local now = os.date '%Y-%m-%d %H:%M'
             local out = {
               id = note.id,
+              type = (note.metadata and note.metadata.type) or 'Note',
               title = note.title or '',
               created = (note.metadata and note.metadata.created) or now,
               modified = now,
@@ -270,10 +263,6 @@ function M.config()
           vim.keymap.set('n', '<leader>oo', ':Obsidian open<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian [O]pen in app' }))
           vim.keymap.set('n', '<leader>of', ':Obsidian quick_switch<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian [F]ind note' }))
           vim.keymap.set('n', '<leader>or', rename_note, vim.tbl_extend('force', opts, { desc = '[O]bsidian [R]ename' }))
-
-          -- Template operations
-          vim.keymap.set('n', '<leader>oT', ':Obsidian new_from_template<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian New from [T]emplate' }))
-          vim.keymap.set('n', '<leader>op', ':Obsidian template<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian Insert tem[P]late' }))
 
           -- Search & navigation
           vim.keymap.set('n', '<leader>os', ':Obsidian search<CR>', vim.tbl_extend('force', opts, { desc = '[O]bsidian [S]earch' }))
