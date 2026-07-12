@@ -5,13 +5,8 @@ M.specs = {
   { src = 'https://github.com/nvim-tree/nvim-web-devicons' },
 }
 
-function M.config()
-  -- Original lazy.nvim trigger: event = 'VeryLazy'
-  vim.api.nvim_create_autocmd('UIEnter', {
-    once = true,
-    callback = function()
-      vim.schedule(function()
-        require('lualine').setup {
+local function apply()
+  require('lualine').setup {
           options = {
             theme = {
               normal = {
@@ -41,8 +36,8 @@ function M.config()
                 c = { fg = '#a9b1d6', bg = '#1a1b26' },
               },
             },
-            component_separators = { left = '│', right = '│' },
-            section_separators = { left = '', right = '' },
+            component_separators = { left = '\u{e0c1}', right = '\u{e0c3}' },
+            section_separators = { left = '\u{e0c0}', right = '\u{e0c2}' },
             refresh = {
               statusline = 1000, -- Update every second for stable components
               tabline = 1000,
@@ -53,8 +48,41 @@ function M.config()
             },
           },
           sections = {
-            lualine_a = { 'mode' },
-            lualine_b = { 'branch', 'diff', 'diagnostics' },
+            lualine_a = {
+              {
+                function()
+                  local mode_icons = {
+                    n = '\u{f02dc} NORMAL',
+                    i = '\u{f03eb} INSERT',
+                    v = '\u{f06d0} VISUAL',
+                    V = '\u{f0279} V-LINE',
+                    [''] = '\u{f0d32} V-BLOCK',
+                    c = '\u{f07b7} COMMAND',
+                    R = '\u{f00e8} REPLACE',
+                    t = '\u{f018d} TERMINAL',
+                    s = '\u{f0485} SELECT',
+                    S = '\u{f0485} S-LINE',
+                  }
+                  return mode_icons[vim.fn.mode()] or vim.fn.mode()
+                end,
+              },
+            },
+            lualine_b = {
+              { 'branch', icon = '\u{f062c}' },
+              {
+                'diff',
+                symbols = { added = '\u{f0415} ', modified = '\u{f03eb} ', removed = '\u{f0374} ' },
+              },
+              {
+                'diagnostics',
+                symbols = {
+                  error = '\u{f0159} ',
+                  warn = '\u{f0026} ',
+                  info = '\u{f02fc} ',
+                  hint = '\u{f02d7} ',
+                },
+              },
+            },
             lualine_c = {
               {
                 'filename',
@@ -88,15 +116,15 @@ function M.config()
                 function()
                   local clients = vim.lsp.get_clients()
                   if #clients > 0 then
-                    return 'LSP' .. (#clients > 1 and '[' .. #clients .. ']' or '')
+                    return '\u{f0318} LSP' .. (#clients > 1 and '[' .. #clients .. ']' or '')
                   end
                   return ''
                 end,
                 color = { fg = '#7dcfff' },
               },
-              { 'encoding', separator = { left = '│' } },
-              { 'fileformat', separator = { left = '│' } },
-              { 'filetype', separator = { left = '│' } },
+              { 'encoding', icon = '\u{f023b}', separator = { left = '\u{e0c1}' } },
+              { 'fileformat', icons_enabled = true, separator = { left = '\u{e0c1}' } },
+              { 'filetype', icon_only = false, colored = true, separator = { left = '\u{e0c1}' } },
               {
                 function()
                   local noice_ok, noice = pcall(require, 'noice')
@@ -108,14 +136,24 @@ function M.config()
                 color = { fg = '#ff9e64' },
               },
             },
-            lualine_y = { 'progress', 'searchcount' },
-            lualine_z = { 'location' },
+            lualine_y = {
+              { 'progress', icon = '\u{f05da}', separator = { left = '\u{e0ba}' } },
+              { 'searchcount', icon = '\u{f0349}' },
+            },
+            lualine_z = { { 'location', icon = '\u{f034e}', separator = { left = '\u{e0ba}' } } },
           },
-          extensions = { 'fugitive', 'quickfix', 'fzf', 'lazy', 'mason', 'nvim-dap-ui', 'oil', 'trouble' },
-        }
-      end)
+    extensions = { 'fugitive', 'quickfix', 'fzf', 'lazy', 'mason', 'nvim-dap-ui', 'oil', 'trouble' },
+  }
+end
+
+function M.config()
+  vim.api.nvim_create_autocmd('UIEnter', {
+    once = true,
+    callback = function()
+      vim.schedule(apply)
     end,
   })
+  vim.api.nvim_create_user_command('LualineReload', apply, {})
 end
 
 return M
