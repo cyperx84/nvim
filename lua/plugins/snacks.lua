@@ -26,17 +26,48 @@ function M.config()
   -- was dropped for this reason. Other outliers excluded: width (attackontitan
   -- 84, skeleton 80, skulltwo 40), height (blackhole 14, flyingdragon 45) and
   -- the 60-wide group (dancerramp/finger/robot).
-  local all = {
+  -- Preferred (curated for a uniform ~50-wide layout). Upstream milli.nvim
+  -- 6e94122 slimmed to 6 bundled splashes and moved these to its install-on-demand
+  -- registry — so instead of depending on :MilliInstall (per-machine local state),
+  -- we vendor them in this repo at lua/milli/splashes/*.lua. nvim's runtimepath
+  -- loader finds them there like any bundled splash, so they travel with the
+  -- config to every machine. See that dir; re-fetch with :MilliInstall <name>.
+  local preferred = {
     'aiface',
     'shader',
     'lighningtornado',
     'skullone',
   }
+  -- Always-available fallback: the currently bundled splashes. Guarantees the
+  -- dashboard renders even before any registry splash is installed.
+  local bundled = { 'fire', 'vibecat', 'blackhole', 'skeleton', 'dancerramp', 'finger' }
   -- LuaJIT's math.random isn't auto-seeded, so without this every launch
   -- picks the same index. hrtime() is a high-entropy per-launch seed.
   math.randomseed(vim.loop.hrtime())
-  splash_name = all[math.random(#all)]
-  local splash = milli.load { splash = splash_name }
+
+  -- Pick a random splash that actually loads. Upstream can move a name to the
+  -- registry (or drop it), so probe candidates and skip any that fail rather
+  -- than letting a missing splash abort startup. Preferred pool first, then
+  -- bundled as a safety net.
+  local function pick(pool)
+    pool = vim.deepcopy(pool)
+    while #pool > 0 do
+      local i = math.random(#pool)
+      local name = pool[i]
+      local ok, data = pcall(milli.load, { splash = name })
+      if ok and data and data.frames then return name, data end
+      table.remove(pool, i)
+    end
+  end
+  local splash
+  splash_name, splash = pick(preferred)
+  if not splash then splash_name, splash = pick(bundled) end
+  -- Last-resort stub so the rest of config never indexes nil (all splashes
+  -- somehow unavailable). One blank frame → snacks shows its default header.
+  if not splash then
+    splash_name = nil
+    splash = { cols = 60, frames = { { '' } } }
+  end
   local opts = {
     bigfile = { enabled = true },
     picker = { enabled = false }, -- Disabled due to dimension validation issues - use Telescope instead

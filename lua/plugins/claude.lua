@@ -68,12 +68,21 @@ function M.config()
   vim.api.nvim_create_autocmd('UIEnter', {
     once = true,
     callback = vim.schedule_wrap(function()
+      -- Resolve the claude binary per-machine instead of hardcoding one path:
+      -- it's ~/.local/bin/claude on some boxes, /opt/homebrew/bin/claude
+      -- (Homebrew) on others. exepath() finds whatever is on nvim's PATH; fall
+      -- back to the ~/.local/bin location if it isn't on PATH.
+      local claude_bin = vim.fn.exepath 'claude'
+      if claude_bin == '' then
+        claude_bin = vim.fn.expand '~/.local/bin/claude'
+      end
+
       local opts = {
         -- `env -u TMUX -u TMUX_PANE`: Claude Code downgrades itself to 256-color
         -- whenever it sees $TMUX (washes the mascot/colors). This launches the
         -- binary directly, bypassing the shell alias that handles it elsewhere,
         -- so strip $TMUX here too to keep true 24-bit color.
-        terminal_cmd = 'env -u TMUX -u TMUX_PANE ' .. vim.fn.expand '~/.local/bin/claude' .. ' --dangerously-skip-permissions',
+        terminal_cmd = 'env -u TMUX -u TMUX_PANE ' .. claude_bin .. ' --dangerously-skip-permissions',
 
         port_range = { min = 10000, max = 65535 },
         auto_start = true,
