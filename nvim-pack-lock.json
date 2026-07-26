@@ -63,7 +63,7 @@
       "src": "https://github.com/nvim-lualine/lualine.nvim"
     },
     "mason-lspconfig.nvim": {
-      "rev": "a4068c3ebd4cb335b25239e5ea35c22ee6007962",
+      "rev": "7adc933dabcc7c86ae6b07aff7ee68eac398491f",
       "src": "https://github.com/williamboman/mason-lspconfig.nvim"
     },
     "mason-nvim-dap.nvim": {
@@ -87,7 +87,7 @@
       "src": "https://github.com/echasnovski/mini.icons"
     },
     "mini.nvim": {
-      "rev": "05a80b0340a92136a93ab04346cf97de3f165948",
+      "rev": "946ae64e0ee807ae3c41f382f0114b4ed4915b2c",
       "src": "https://github.com/echasnovski/mini.nvim"
     },
     "mini.pick": {
@@ -99,7 +99,7 @@
       "src": "https://github.com/loctvl842/monokai-pro.nvim"
     },
     "neogit": {
-      "rev": "95295edaa26e8e8db5a9bc4119256e602311c6bc",
+      "rev": "57c9f8ee784bcd07141bf7fa958b5c5bb1420de8",
       "src": "https://github.com/NeogitOrg/neogit"
     },
     "neoscroll.nvim": {
@@ -139,7 +139,7 @@
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "nvim-lspconfig": {
-      "rev": "d5b6e3db4c17b0146f63a2fc47e2027a754b2cb1",
+      "rev": "d592c1e6ad9a0a01b3d5ed3f0345d68407167181",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-nio": {
@@ -151,7 +151,7 @@
       "src": "https://github.com/rcarriga/nvim-notify"
     },
     "nvim-treesitter": {
-      "rev": "4916d6592ede8c07973490d9322f187e07dfefac",
+      "rev": "8b3a191c015dd66a92d51a112ed96af0aac13b63",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
@@ -160,11 +160,11 @@
       "src": "https://github.com/kevinhwang91/nvim-ufo"
     },
     "nvim-web-devicons": {
-      "rev": "0ca28b61a04fe7426cefbdd52c2647ef0e335b5f",
+      "rev": "2ae6958df7ced50baac5035cec0c15799eedfbf7",
       "src": "https://github.com/nvim-tree/nvim-web-devicons"
     },
     "obsidian.nvim": {
-      "rev": "4bf07e502c4e35425a0bfc3438232a10971c1355",
+      "rev": "69fe7c6bf61a5222b5061a9a9dfc5023f2ec0fdc",
       "src": "https://github.com/obsidian-nvim/obsidian.nvim",
       "version": ">=0.0.0"
     },
@@ -173,7 +173,7 @@
       "src": "https://github.com/stevearc/oil.nvim"
     },
     "opencode.nvim": {
-      "rev": "8cb752f295664ab0736ad4498f659324e506e074",
+      "rev": "259ac3d3115cc16f29d6df9b7697add0c8b7cab4",
       "src": "https://github.com/NickvanDyke/opencode.nvim"
     },
     "plenary.nvim": {
