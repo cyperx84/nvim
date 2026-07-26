@@ -232,30 +232,35 @@ function M.config()
           -- obsidian only activates inside a workspace.
           enabled = true,
 
+          -- Emit only what the vault rulebook (~/vaults/CyperX/AGENTS.md) says a
+          -- note carries. Deliberately absent:
+          --
+          --   id / created / modified  git holds creation and full history, and
+          --                            the path is the identity. `vault-stamp.sh`
+          --                            actively STRIPS these ("deprecated scalar
+          --                            keys other tools keep re-adding") — writing
+          --                            them here just fought that on every save,
+          --                            churning notes between the two tools.
+          --   timestamp                owned by vault-stamp.sh, called from
+          --                            vault-sync on notes changed that cycle.
+          --                            Preserved verbatim below, never written here.
+          --
+          -- `type` is OKF's one required field (SPEC.md v0.2 §4.1, §11).
           func = function(note)
-            local now = os.date '%Y-%m-%d %H:%M'
-            -- OKF (Open Knowledge Format) wants a strict ISO 8601 UTC timestamp
-            -- alongside the human-readable created/modified pair.
-            local now_iso = os.date '!%Y-%m-%dT%H:%M:%SZ'
             local out = {
-              id = note.id,
               type = (note.metadata and note.metadata.type) or 'Note',
               title = note.title or '',
               description = (note.metadata and note.metadata.description) or nil,
-              created = (note.metadata and note.metadata.created) or now,
-              modified = now,
-              timestamp = now_iso,
-              reviewed = (note.metadata and note.metadata.reviewed) or nil,
               tags = note.tags or {},
-              topics = (note.metadata and note.metadata.topics) or {},
               refs = (note.metadata and note.metadata.refs) or {},
               aliases = note.aliases or {},
-              base = (note.metadata and note.metadata.base) or nil,
             }
 
-            -- Preserve custom metadata fields
+            -- Pass through everything else already on the note — status, project,
+            -- timestamp, topics, base, reviewed, and any OKF field this config
+            -- doesn't model (sources, generated, verified, stale_after).
             if note.metadata ~= nil and not vim.tbl_isempty(note.metadata) then
-              local handled = { 'description', 'created', 'modified', 'timestamp', 'reviewed', 'topics', 'refs', 'base' }
+              local handled = { 'type', 'description', 'refs', 'id', 'created', 'modified', 'author', 'ttl' }
               for k, v in pairs(note.metadata) do
                 if not vim.tbl_contains(handled, k) then
                   out[k] = v
@@ -279,8 +284,20 @@ function M.config()
           end,
         },
 
-        -- Link style: Use markdown links [text](file.md) instead of wiki [[links]]
-        link = { style = 'markdown' },
+        -- Link style: markdown links [text](file.md), never wiki [[links]].
+        --
+        -- `format = 'absolute'` means vault-root-relative with NO leading slash
+        -- (`projects/eve/foo.md`), which is exactly what Obsidian's
+        -- `newLinkFormat: "absolute"` emits — the two now generate identical
+        -- links instead of drifting (the default here is 'shortest', i.e.
+        -- basename only, which is what caused the mixed styles in the vault).
+        --
+        -- Not OKF's *recommended* `/projects/eve/foo.md`: Obsidian refuses to
+        -- support a leading slash ("not universally clear if / means the root of
+        -- vault or the root of the filesystem" — forum.obsidian.md/t/32501/8).
+        -- Costs nothing — SPEC.md v0.2 §6 permits relative paths, and §11's three
+        -- conformance rules say nothing about link style.
+        link = { style = 'markdown', format = 'absolute' },
 
         -- Picker (telescope)
         picker = {
