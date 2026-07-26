@@ -23,6 +23,18 @@ local function harpoon()
 end
 
 function M.config()
+  -- Purple border on the harpoon menu only (remap FloatBorder for its window).
+  vim.api.nvim_create_autocmd('FileType', {
+    pattern = 'harpoon',
+    callback = function(ev)
+      vim.api.nvim_set_hl(0, 'HarpoonBorder', { fg = '#bb9af7' })
+      local win = vim.fn.bufwinid(ev.buf)
+      if win ~= -1 then
+        vim.wo[win].winhighlight = 'FloatBorder:HarpoonBorder,FloatTitle:HarpoonBorder'
+      end
+    end,
+  })
+
   vim.keymap.set('n', '<M-a>', function()
     harpoon():list():add()
   end, { desc = 'Harpoon: Mark File' })
