@@ -79,6 +79,95 @@ local function toggle_checkboxes_range(start_line, end_line)
   end
 end
 
+--- Resolve a directory link under the cursor to a real directory.
+---
+--- OKF index files link to directories (`[notes/](/notes/)`), and obsidian.nvim
+--- has no concept of those: it appends `.md`, fails to resolve `notes/.md`, and
+--- prompts to CREATE a note — which silently litters the vault with junk notes.
+--- Detect them before obsidian sees them.
+---@return string|nil dir absolute directory, or nil if the cursor isn't on one
+local function cursor_dir_link()
+  local ok, obsidian_api = pcall(require, 'obsidian.api')
+  if not ok then
+    return nil
+  end
+  local link = obsidian_api.cursor_link()
+  if not link then
+    return nil
+  end
+  local location = require('obsidian.util').parse_link(link)
+  if not location or not location:match '/$' then
+    return nil
+  end
+
+  local vault = _G.Obsidian and _G.Obsidian.dir and tostring(_G.Obsidian.dir) or nil
+  local candidates = {}
+  if vim.startswith(location, '/') then
+    -- OKF root-absolute: relative to the vault, not the filesystem.
+    if vault then
+      candidates[#candidates + 1] = vault .. location
+    end
+  else
+    candidates[#candidates + 1] = vim.fs.joinpath(vim.fn.expand '%:p:h', location)
+    if vault then
+      candidates[#candidates + 1] = vim.fs.joinpath(vault, location)
+    end
+  end
+
+  for _, dir in ipairs(candidates) do
+    if vim.fn.isdirectory(dir) == 1 then
+      return dir
+    end
+  end
+  return nil
+end
+
+--- Browse a directory (netrw is disabled in lua/pack.lua, so `:edit <dir>` would
+--- just open an empty buffer).
+---@param dir string
+---@return nil
+local function open_dir(dir)
+  local ok, oil = pcall(require, 'oil')
+  if ok then
+    oil.open(dir)
+  else
+    vim.cmd.edit(vim.fn.fnameescape(dir))
+  end
+end
+
+--- Install the link-following keymaps for a markdown buffer.
+---
+--- Applied twice: once on FileType (so plain markdown outside the vault still
+--- gets a sane `gf`) and again on `ObsidianNoteEnter`, which fires at the end of
+--- obsidian's own attach — that's the only way to win over the `<CR>` mapping it
+--- installs there itself.
+---@return nil
+local function apply_link_keymaps()
+  vim.keymap.set('n', 'gf', function()
+    local dir = cursor_dir_link()
+    if dir then
+      return open_dir(dir)
+    end
+    if vim.b.obsidian_buffer then
+      vim.cmd 'Obsidian follow_link'
+    else
+      vim.cmd 'normal! gf'
+    end
+  end, { buffer = true, desc = 'Follow link under cursor' })
+
+  vim.keymap.set('n', '<cr>', function()
+    local dir = cursor_dir_link()
+    if dir then
+      -- Defer: an expr mapping may not change buffers while it's being evaluated.
+      vim.schedule(function()
+        open_dir(dir)
+      end)
+      return ''
+    end
+    return require('obsidian').util.smart_action()
+  end, { buffer = true, expr = true, desc = 'Smart action' })
+end
+
 -- =============================================================================
 -- PLUGIN SPECIFICATION
 -- =============================================================================
@@ -103,15 +192,11 @@ function M.config()
       -- =========================================================================
       require('obsidian').setup {
         -- Workspaces
-        -- Specific vaults come first so first-match resolution picks them for
-        -- their own notes. 'notes' is a flexible catch-all: drop notes in any
-        -- structure under ~/notes and obsidian manages frontmatter there, while
-        -- leaving code repos, dotfiles, and ~/.config untouched. To relocate your
-        -- notes later, just change this one path.
+        -- One vault, any structure under it: obsidian manages frontmatter there
+        -- and nowhere else, so code repos, dotfiles, and ~/.config stay
+        -- untouched. To relocate the vault later, change this one path.
         workspaces = {
-          { name = 'klaw', path = vim.fn.expand '~/.openclaw/workspace/vault' },
-          { name = 'cyperx', path = vim.fn.expand '~/Library/Mobile Documents/iCloud~md~obsidian/Documents/cyperx' },
-          { name = 'notes', path = vim.fn.expand '~/notes' },
+          { name = 'notes', path = vim.fn.expand '~/vaults/CyperX' },
         },
 
         -- Daily notes
@@ -142,20 +227,24 @@ function M.config()
 
         -- Frontmatter
         frontmatter = {
-          -- Manage frontmatter for notes in any configured workspace (the two
-          -- vaults plus anything under ~/notes). Markdown outside these — code
-          -- repos, dotfiles, ~/.config — is never touched, since obsidian only
-          -- activates inside a workspace.
+          -- Manage frontmatter for notes anywhere in the vault. Markdown outside
+          -- it — code repos, dotfiles, ~/.config — is never touched, since
+          -- obsidian only activates inside a workspace.
           enabled = true,
 
           func = function(note)
             local now = os.date '%Y-%m-%d %H:%M'
+            -- OKF (Open Knowledge Format) wants a strict ISO 8601 UTC timestamp
+            -- alongside the human-readable created/modified pair.
+            local now_iso = os.date '!%Y-%m-%dT%H:%M:%SZ'
             local out = {
               id = note.id,
               type = (note.metadata and note.metadata.type) or 'Note',
               title = note.title or '',
+              description = (note.metadata and note.metadata.description) or nil,
               created = (note.metadata and note.metadata.created) or now,
               modified = now,
+              timestamp = now_iso,
               reviewed = (note.metadata and note.metadata.reviewed) or nil,
               tags = note.tags or {},
               topics = (note.metadata and note.metadata.topics) or {},
@@ -166,7 +255,7 @@ function M.config()
 
             -- Preserve custom metadata fields
             if note.metadata ~= nil and not vim.tbl_isempty(note.metadata) then
-              local handled = { 'created', 'modified', 'reviewed', 'topics', 'refs', 'base' }
+              local handled = { 'description', 'created', 'modified', 'timestamp', 'reviewed', 'topics', 'refs', 'base' }
               for k, v in pairs(note.metadata) do
                 if not vim.tbl_contains(handled, k) then
                   out[k] = v
@@ -234,16 +323,7 @@ function M.config()
           end, 100)
 
           -- Core keymaps
-          vim.keymap.set('n', 'gf', function()
-            if vim.b.obsidian_buffer then
-              vim.cmd 'Obsidian follow_link'
-            else
-              vim.cmd 'normal! gf'
-            end
-          end, { buffer = true, desc = 'Follow link under cursor' })
-          vim.keymap.set('n', '<cr>', function()
-            return require('obsidian').util.smart_action()
-          end, { buffer = true, expr = true, desc = 'Smart action' })
+          apply_link_keymaps()
 
           -- Checkbox toggle
           vim.keymap.set('n', '<leader>ch', function()
@@ -288,6 +368,15 @@ function M.config()
         end,
       })
 
+      -- Re-assert the link keymaps after obsidian attaches: its own BufEnter
+      -- handler installs a plain `<CR>` -> smart_action that would otherwise
+      -- shadow the directory-link handling above.
+      vim.api.nvim_create_autocmd('User', {
+        pattern = 'ObsidianNoteEnter',
+        callback = apply_link_keymaps,
+        desc = 'Re-apply obsidian link keymaps after attach',
+      })
+
       -- =========================================================================
       -- AUTO-RELOAD FOR EXTERNAL CHANGES
       -- =========================================================================
@@ -301,11 +390,36 @@ function M.config()
         desc = 'Auto-reload markdown files when changed externally',
       })
 
-      -- Re-fire FileType for the triggering buffer so the markdown
-      -- settings/keymaps autocmd above runs for it too.
+      -- Re-fire the events this deferred setup missed, for every markdown
+      -- buffer already open (a `nvim a.md b.md` / session-restore start loads
+      -- several before setup runs).
+      --
+      -- Two events, in this order, both required:
+      --   FileType  runs the settings/keymaps autocmd above, and obsidian's own
+      --             FileType handler, which only *registers* per-buffer handlers.
+      --   BufEnter  is where obsidian actually *attaches* — sets b:obsidian_buffer
+      --             and 'includeexpr', and starts the obsidian-ls client that
+      --             backs `Obsidian follow_link` / <CR>. Its BufEnter autocmd is
+      --             created by the FileType handler above, so by the time it
+      --             exists the buffer's own BufEnter has long since passed and
+      --             nothing attaches until you leave the buffer and come back.
+      --             Without this, links are dead on every buffer open at startup.
       vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(ev.buf) then
-          vim.api.nvim_exec_autocmds('FileType', { buffer = ev.buf, modeline = false })
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].filetype == 'markdown' then
+            vim.api.nvim_exec_autocmds('FileType', { buffer = buf, modeline = false })
+            -- Scoped to obsidian's own augroup so re-entering the buffer doesn't
+            -- replay every other plugin's BufEnter; fall back to an unscoped
+            -- re-fire if upstream ever renames the group.
+            local ok = pcall(vim.api.nvim_exec_autocmds, 'BufEnter', {
+              buffer = buf,
+              group = 'obsidian_setup',
+              modeline = false,
+            })
+            if not ok then
+              vim.api.nvim_exec_autocmds('BufEnter', { buffer = buf, modeline = false })
+            end
+          end
         end
       end)
     end,
