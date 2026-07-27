@@ -63,14 +63,27 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufWinEnter', 'BufWritePost' }, {
   end,
 })
 
--- Save and restore folds automatically
+-- Save and restore folds automatically.
+--
+-- Views only make sense for real, on-disk file buffers, and restricting to
+-- them is not just tidiness: `:loadview` fires SessionLoadPost, and neogit
+-- treats that event as "a session was restored" by wiping every Neogit*
+-- buffer (neogit/autocmds.lua). Firing it on neogit's own `buftype=nofile`
+-- status buffer killed the buffer milliseconds after it opened, and the async
+-- refresh then rendered into it: "Invalid buffer id: N".
 local fold_exclude_ft = { 'gitcommit', 'gitrebase', 'help', '' }
+
+local function fold_view_eligible()
+  return vim.bo.buftype == ''
+    and not vim.tbl_contains(fold_exclude_ft, vim.bo.filetype)
+    and vim.fn.filereadable(vim.api.nvim_buf_get_name(0)) == 1
+end
 
 vim.api.nvim_create_autocmd('BufWinLeave', {
   pattern = '*',
   group = vim.api.nvim_create_augroup('save-folds', { clear = true }),
   callback = function()
-    if not vim.tbl_contains(fold_exclude_ft, vim.bo.filetype) then
+    if fold_view_eligible() then
       vim.cmd('silent! mkview')
     end
   end,
@@ -80,7 +93,7 @@ vim.api.nvim_create_autocmd('BufWinEnter', {
   pattern = '*',
   group = vim.api.nvim_create_augroup('restore-folds', { clear = true }),
   callback = function()
-    if not vim.tbl_contains(fold_exclude_ft, vim.bo.filetype) then
+    if fold_view_eligible() then
       vim.cmd('silent! loadview')
     end
   end,
