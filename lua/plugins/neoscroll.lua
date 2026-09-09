@@ -1,7 +1,7 @@
 local M = {}
 
 M.specs = {
-  { src = 'https://github.com/karb94/neoscroll.nvim' },
+  { src = 'https://github.com/karb94/neoscroll.nvim', data = { lazy = true } },
 }
 
 function M.config()
@@ -10,6 +10,7 @@ function M.config()
     once = true,
     callback = function()
       vim.schedule(function()
+        require('pack').load { 'neoscroll.nvim' }
         require('neoscroll').setup {
           mappings = {}, -- Disable default mappings, we'll define our own
           hide_cursor = true,

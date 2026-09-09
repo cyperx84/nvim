@@ -37,7 +37,7 @@ inline autocmd):
 | nvim-ufo | `BufReadPost` | `nvim-ufo.lua` |
 | render-markdown | `FileType` | `render-markdown.lua` |
 | fidget | `LspAttach` | `lspconfig.lua` |
-| lualine, mini, noice, uv, neoscroll, dressing, claude | `UIEnter` | (respective files) |
+| lualine, mini, uv, neoscroll, claude | `UIEnter` | (respective files) |
 | which-key, todo-comments, telescope | `VimEnter` | (respective files) |
 
 Kept eager on purpose: `colorscheme`/highlights, `transparent`, `snacks`,
@@ -79,7 +79,7 @@ Kept eager on purpose: `colorscheme`/highlights, `transparent`, `snacks`,
 - **transparent** — transparent backgrounds
 - **snacks** — dashboard, pickers, QoL utilities
 - **lualine** — statusline
-- **noice / nvim-notify** — UI for messages/cmdline/notifications
+- **snacks.notifier** — messages/notifications UI (noice + nvim-notify retired 2025-08)
 - **indent-blankline**, **nvim-highlight-colors**, **which-key**
 
 ### Markdown / notes
@@ -88,9 +88,9 @@ Kept eager on purpose: `colorscheme`/highlights, `transparent`, `snacks`,
 - **img-clip** (lazy) — paste images into notes
 
 ### Navigation / editing
-- **Navigator.nvim** — split/tmux pane navigation
+- **herdr_nav** (`after/plugin/herdr_nav.lua`) — split/herdr/tmux pane navigation
 - **neoscroll** — smooth, centered scrolling
-- **mini.\***, **nvim-autopairs**, **nvim-ufo** (folding), **vim-sleuth**
+- **mini.nvim** (ai/surround/sessions/pick/diff), **nvim-autopairs**, **nvim-ufo** (folding), **vim-sleuth**
   (indent detection)
 
 > The exact set evolves — `lua/plugins/` and `:lua = vim.pack.get()` are the

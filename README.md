@@ -204,10 +204,11 @@ add all buffers, `<leader>cs` send selection (visual), `<leader>cm` pick model,
 - **Oil** (`<C-e>`) — edit the filesystem like a buffer; deletes to trash, runs
   LSP-aware file ops. (`-` goes to the parent dir inside an Oil buffer.)
 - **Telescope** (`<leader>s…`) — fuzzy finder with fzf-native + ui-select.
-- **Harpoon 2** — `<M-a>` mark, `<M-e>` menu, `<M-j/k/l>` jump to files 1–3,
-  `<M-u/i/o>` 4–6, `<M-7/8/9>` 7–9.
-- **Navigator.nvim** — `<C-h/j/k/l>` moves seamlessly across Neovim splits and
-  tmux panes.
+- **Harpoon 2** — `<leader>ha` mark, `<leader>he` menu, `<leader>hj/k/l` jump to
+  files 1–3, `<leader>hu/i/o` 4–6, `<leader>h7/8/9` 7–9. (Off the Alt row since
+  2026-08 — herdr owns those chords.)
+- **herdr navigation** (`after/plugin/herdr_nav.lua`) — `<C-h/j/k/l>` moves
+  seamlessly across Neovim splits and herdr panes (tmux fallback).
 - **neoscroll** — smooth, auto-centered half-page scrolling.
 
 ### Git
@@ -234,7 +235,7 @@ workspace. Live in-buffer rendering via
 - **transparent.nvim** — global background transparency with float handling.
 - **snacks.nvim** — dashboard (with live boot-time footer), pickers, zen mode
   (`<leader>tz`), and the terminal provider Claude Code / OpenCode reuse.
-- **lualine** statusline, **noice** + **nvim-notify** for messages/cmdline.
+- **lualine** statusline; **snacks.notifier** owns messages/notifications.
 
 ### Sessions (mini.sessions)
 
@@ -254,7 +255,7 @@ Leader is `Space`. **which-key** shows live hints — press `<leader>` and wait.
 | `<leader>sf` / `<leader>sg` | Find files / live grep (Telescope) |
 | `<leader><leader>` | Find open buffers |
 | `<C-h/j/k/l>` | Move across splits / tmux panes |
-| `<M-a>` / `<M-e>` | Harpoon: mark file / toggle menu |
+| `<leader>ha` / `<leader>he` | Harpoon: mark file / toggle menu |
 | `gd` / `gr` / `gI` | LSP goto definition / references / implementation |
 | `<leader>rn` / `<leader>ca` | Rename symbol / code action |
 | `<leader>l` | Format buffer or selection |

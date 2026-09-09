@@ -175,7 +175,8 @@ end
 M.specs = {
   {
     src = 'https://github.com/obsidian-nvim/obsidian.nvim',
-    version = vim.version.range '*',
+    -- Follows default branch tracking; a '*' range pinned nothing and was
+    -- dropped. Add a real pin here if you want release-only updates.
   },
 }
 

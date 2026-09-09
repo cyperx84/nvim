@@ -148,7 +148,23 @@ function M.config()
     explorer = { enabled = false },
     indent = { enabled = true },
     input = { enabled = false },
-    notifier = { enabled = false },
+    -- Sole messaging pipeline (noice + nvim-notify retired into noice.lua as
+    -- off-rtp flip-backs). Styled notifications, inline in the corner.
+    notifier = {
+      enabled = true,
+      timeout = 3000,
+      style = 'compact',
+      -- Carried over from the old noice routes: suppress the noisy LSP-hover
+      -- "No information available" spam and the terminal-open chatter.
+      filter = function(n)
+        local msg = n.msg or ''
+        return not (msg:find('No information available', 1, true)
+          or msg:find('Native terminal opened', 1, true))
+      end,
+    },
+    -- noice's other former jobs are covered elsewhere: message routing lives
+    -- in vim.o.cmdheight/messages default behavior + :messages keymap below;
+    -- lsp_doc_border is covered by vim.o.winborder (lspconfig).
     quickfile = { enabled = true },
     scope = { enabled = false },
     statuscolumn = { enabled = false },
@@ -188,17 +204,19 @@ function M.config()
   Snacks.toggle.new {
     id = 'ufo',
     name = 'Enable/Disable ufo',
+    -- ufo.inspect() returns a fold-info TABLE (always truthy), so it can't
+    -- report toggle state; vim.o.foldenable is the actual switch. The old
+    -- set() body also called noice enable/disable — copy-paste from a noice
+    -- toggle, unrelated to folds.
     get = function()
-      return require('ufo').inspect()
+      return vim.o.foldenable and require('ufo').enableFold ~= nil
     end,
     set = function(state)
-      if state == nil then
-        require('noice').enable()
+      if state then
         require('ufo').enable()
         vim.o.foldenable = true
         vim.o.foldcolumn = '1'
       else
-        require('noice').disable()
         require('ufo').disable()
         vim.o.foldenable = false
         vim.o.foldcolumn = '0'
@@ -222,6 +240,11 @@ function M.config()
   vim.keymap.set('n', '<leader>tT', function()
     Snacks.terminal.toggle()
   end, { desc = 'Toggle Terminal' })
+  -- Replaces noice's <leader>z NoiceDismiss now that snacks.notifier owns
+  -- messaging.
+  vim.keymap.set('n', '<leader>z', function()
+    Snacks.notifier.hide()
+  end, { desc = 'Dismiss Notifications' })
 end
 
 return M

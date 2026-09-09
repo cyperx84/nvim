@@ -56,8 +56,8 @@ rebuild.
    - **`BufReadPost`/`BufNewFile`**: indent-blankline, nvim-highlight-colors, nvim-ufo
    - **`FileType`**: render-markdown, lspconfig's document-highlight setup
    - **`LspAttach`**: fidget
-   - **`UIEnter`** (after first frame): mini, noice, uv — plus inline-deferred
-     claude, dressing, lualine, neoscroll
+   - **`UIEnter`** (after first frame): mini, uv — plus inline-deferred
+     claude, lualine, neoscroll
    - **`VimEnter`**: which-key, todo-comments, telescope
 
 5. **Deferred work inside an eager `config()`.** `lspconfig` stays eager so

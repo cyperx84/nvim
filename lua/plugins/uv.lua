@@ -1,13 +1,14 @@
 local M = {}
 
 M.specs = {
-  { src = 'https://github.com/benomahony/uv.nvim' },
+  { src = 'https://github.com/benomahony/uv.nvim', data = { lazy = true } },
 }
 
 function M.config()
   -- Original lazy spec used event = 'VeryLazy'; defer setup until the UI is ready.
   require('pack').defer('UIEnter', function()
     vim.schedule(function()
+      require('pack').load { 'uv.nvim' }
       require('uv').setup {
         -- Auto-activate virtual environments when found
         auto_activate_venv = true,

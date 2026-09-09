@@ -1,11 +1,29 @@
 local M = {}
 
 M.specs = {
-  { src = 'https://github.com/nvim-lualine/lualine.nvim' },
+  { src = 'https://github.com/nvim-lualine/lualine.nvim', data = { lazy = true } },
   { src = 'https://github.com/nvim-tree/nvim-web-devicons' },
 }
 
+-- Hoisted out of the mode component: allocating this table inside the
+-- callback rebuilt it on every statusline redraw.
+local MODE_ICONS = {
+  n = '\u{f02dc} NORMAL',
+  i = '\u{f03eb} INSERT',
+  v = '\u{f06d0} VISUAL',
+  V = '\u{f0279} V-LINE',
+  [''] = '\u{f0d32} V-BLOCK',
+  c = '\u{f07b7} COMMAND',
+  R = '\u{f00e8} REPLACE',
+  t = '\u{f018d} TERMINAL',
+  s = '\u{f0485} SELECT',
+  S = '\u{f0485} S-LINE',
+}
+
 local function apply()
+  -- Off-rtp until here (data.lazy): the statusline renders slightly after
+  -- first paint either way, so eager packadd bought nothing.
+  require('pack').load { 'lualine.nvim' }
   require('lualine').setup {
           options = {
             theme = {
@@ -51,19 +69,7 @@ local function apply()
             lualine_a = {
               {
                 function()
-                  local mode_icons = {
-                    n = '\u{f02dc} NORMAL',
-                    i = '\u{f03eb} INSERT',
-                    v = '\u{f06d0} VISUAL',
-                    V = '\u{f0279} V-LINE',
-                    [''] = '\u{f0d32} V-BLOCK',
-                    c = '\u{f07b7} COMMAND',
-                    R = '\u{f00e8} REPLACE',
-                    t = '\u{f018d} TERMINAL',
-                    s = '\u{f0485} SELECT',
-                    S = '\u{f0485} S-LINE',
-                  }
-                  return mode_icons[vim.fn.mode()] or vim.fn.mode()
+                  return MODE_ICONS[vim.fn.mode()] or vim.fn.mode()
                 end,
               },
             },
@@ -94,27 +100,14 @@ local function apply()
                   newfile = '[New]',
                 },
               },
-              -- Add breadcrumb navigation if available
-              {
-                function()
-                  local ok, navic = pcall(require, 'nvim-navic')
-                  if ok and navic.is_available() then
-                    return navic.get_location()
-                  end
-                  return ''
-                end,
-                cond = function()
-                  local ok, navic = pcall(require, 'nvim-navic')
-                  return ok and navic.is_available()
-                end,
-                color = { fg = '#a9b1d6' },
-              },
             },
             lualine_x = {
               -- LSP status
               {
                 function()
-                  local clients = vim.lsp.get_clients()
+                  -- Scoped to the current buffer: unscoped get_clients()
+                  -- counted every attached client on every redraw.
+                  local clients = vim.lsp.get_clients({ bufnr = vim.api.nvim_get_current_buf() })
                   if #clients > 0 then
                     return '\u{f0318} LSP' .. (#clients > 1 and '[' .. #clients .. ']' or '')
                   end
@@ -125,16 +118,6 @@ local function apply()
               { 'encoding', icon = '\u{f023b}', separator = { left = '\u{e0c1}' } },
               { 'fileformat', icons_enabled = true, separator = { left = '\u{e0c1}' } },
               { 'filetype', icon_only = false, colored = true, separator = { left = '\u{e0c1}' } },
-              {
-                function()
-                  local noice_ok, noice = pcall(require, 'noice')
-                  if noice_ok and noice.api.status.mode.has() then
-                    return noice.api.status.mode.get()
-                  end
-                  return ''
-                end,
-                color = { fg = '#ff9e64' },
-              },
             },
             lualine_y = {
               { 'progress', icon = '\u{f05da}', separator = { left = '\u{e0ba}' } },
@@ -142,7 +125,7 @@ local function apply()
             },
             lualine_z = { { 'location', icon = '\u{f034e}', separator = { left = '\u{e0ba}' } } },
           },
-    extensions = { 'fugitive', 'quickfix', 'fzf', 'lazy', 'mason', 'nvim-dap-ui', 'oil', 'trouble' },
+            extensions = { 'quickfix', 'mason', 'nvim-dap-ui', 'oil' },
   }
 end
 

@@ -1,31 +1,8 @@
-local M = {}
-
-M.specs = {
-  { src = 'https://github.com/stevearc/dressing.nvim' },
-}
-
-function M.config()
-  -- original lazy spec: event = 'VeryLazy'
-  vim.api.nvim_create_autocmd('UIEnter', {
-    once = true,
-    callback = function()
-      vim.schedule(function()
-        require('dressing').setup {
-          input = {
-            enabled = true,
-            default_prompt = 'Input',
-            border = 'rounded',
-            relative = 'cursor',
-          },
-          select = {
-            enabled = true,
-            backend = { 'telescope', 'builtin' },
-            telescope = require('telescope.themes').get_dropdown(),
-          },
-        }
-      end)
-    end,
-  })
-end
-
-return M
+-- Retired module — kept as a tombstone on purpose: dressing.nvim previously
+-- owned vim.ui.select (archived upstream, confirmed via GitHub API 2025-08).
+-- telescope-ui-select (telescope.lua) is now the sole owner, so vim.ui.select
+-- routes to one backend deterministically.
+--
+-- To undo: restore the setup block from git history and re-add
+--   { src = 'https://github.com/stevearc/dressing.nvim' },
+return {}

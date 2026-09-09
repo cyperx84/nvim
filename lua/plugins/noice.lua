@@ -1,34 +1,15 @@
 local M = {}
 
 M.specs = {
-  { src = 'https://github.com/folke/noice.nvim' },
-  { src = 'https://github.com/MunifTanjim/nui.nvim' },
-  { src = 'https://github.com/rcarriga/nvim-notify' },
+  -- Messaging collapsed into snacks.notifier (snacks.lua): noice + nui +
+  -- nvim-notify rendered messages through a second pipeline next to a snacks
+  -- notifier that was itself switched off — three UIs for one job.
+  -- Kept installed but off the runtimepath (data.lazy) for an easy flip-back
+  -- window; delete this module once the notifier has settled in.
+  { src = 'https://github.com/folke/noice.nvim', data = { lazy = true } },
+  { src = 'https://github.com/MunifTanjim/nui.nvim', data = { lazy = true } },
+  { src = 'https://github.com/rcarriga/nvim-notify', data = { lazy = true } },
 }
 
-function M.config()
-  -- Original lazy spec used event = 'VeryLazy'; defer setup until the UI is ready.
-  require('pack').defer('UIEnter', function()
-    vim.schedule(function()
-      require('noice').setup {
-        routes = {
-          {
-            filter = { event = 'notify', find = 'No information available' },
-            opts = { skip = true },
-          },
-          {
-            filter = { event = 'notify', find = 'Native terminal opened' },
-            opts = { skip = true },
-          },
-        },
-        presets = {
-          lsp_doc_border = true,
-        },
-      }
-    end)
-  end)
-
-  vim.keymap.set('n', '<leader>z', '<cmd>NoiceDismiss<CR>', { desc = 'Dismiss Noice Message' })
-end
-
 return M
+-- vim: ts=2 sts=2 sw=2 et

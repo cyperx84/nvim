@@ -117,12 +117,12 @@ specific FileType).
 | `BufReadPost`/`BufNewFile` | indent-blankline, nvim-highlight-colors, nvim-ufo |
 | `FileType` | render-markdown, lspconfig (highlight setup) |
 | `LspAttach` | fidget (LSP progress UI) |
-| `UIEnter` | mini, noice, uv |
+| `UIEnter` | mini, uv (neoscroll/lualine/claude inline) |
 | `VimEnter` | which-key, todo-comments |
 
 **3. Inline `UIEnter`/`VimEnter` autocmds** — a handful of modules register
 their own deferral instead of using `defer()` (their setup has no per-buffer
-re-fire need): `claude`, `dressing`, `lualine`, `neoscroll` (UIEnter), and
+re-fire need): `claude`, `lualine`, `neoscroll` (UIEnter), and
 `telescope` (VimEnter).
 
 Everything not listed above loads eagerly at startup — see

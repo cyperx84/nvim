@@ -69,45 +69,13 @@ function M.config()
       force = { read = false, write = true, delete = false },
       verbose = { read = true, write = true, delete = true },
     }
-    local statusline = require 'mini.statusline'
-    statusline.setup { use_icons = vim.g.have_nerd_font }
-    ---@diagnostic disable-next-line: duplicate-set-field
-    statusline.section_location = function()
-      return '%2l:%-2v'
-    end
-    require('mini.files').setup {
-      content = {
-        filter = nil,
-        prefix = nil,
-        sort = nil,
-      },
-      mappings = {
-        close = 'q',
-        go_in = 'l',
-        go_in_plus = 'L',
-        go_out = 'h',
-        go_out_plus = 'H',
-        mark_goto = "'",
-        mark_set = 'm',
-        reset = '<BS>',
-        reveal_cwd = '@',
-        show_help = 'g?',
-        synchronize = '=',
-        trim_left = '<',
-        trim_right = '>',
-      },
-      options = {
-        permanent_delete = false,
-        use_as_default_explorer = true,
-      },
-      windows = {
-        max_number = math.huge,
-        preview = true,
-        width_focus = 50,
-        width_nofocus = 15,
-        width_preview = 25,
-      },
-    }
+    -- NOTE: mini.statusline intentionally NOT set up here — lualine owns the
+    -- statusline (plugins/lualine.lua). Under lazy.nvim both were keys/event
+    -- deferred and whichever setup ran last won; mini ran last and silently
+    -- shadowed the themed lualine config.
+    -- mini.files + mini.colors setups removed: nothing in the config opened
+    -- or consumed them (oil is the explorer; lualine's theme is a static
+    -- table). Re-add here if you ever want them back.
 
     require('mini.pick').setup()
     require('mini.colors').setup()

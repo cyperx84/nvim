@@ -5,7 +5,7 @@ M.specs = {
   { src = 'https://github.com/mfussenegger/nvim-dap', data = { lazy = true } },
   { src = 'https://github.com/rcarriga/nvim-dap-ui', data = { lazy = true } },
   { src = 'https://github.com/nvim-neotest/nvim-nio', data = { lazy = true } },
-  { src = 'https://github.com/williamboman/mason.nvim' },
+  { src = 'https://github.com/mason-org/mason.nvim' },
   { src = 'https://github.com/jay-babu/mason-nvim-dap.nvim', data = { lazy = true } },
   { src = 'https://github.com/leoluz/nvim-dap-go', data = { lazy = true } },
 }

@@ -83,13 +83,14 @@ if [ -z "$up" ]; then
 fi
 sleep 3 # let UIEnter/VimEnter configs settle
 
-# Errors recorded by noice (or :messages before noice attaches).
-NOICE_ERRS='luaeval("(function() local ok, n = pcall(function() return #require(\"noice.message.manager\").get({ error = true }, { history = true }) end) if ok then return n end return -1 end)()")'
+# Errors recorded by snacks.notifier (the messaging pipeline since noice was
+# retired), falling back to :messages before snacks is up.
+NOTIFY_ERRS='luaeval("(function() local ok, n = pcall(function() return #Snacks.notifier.get_history() end) if ok then return n end return -1 end)()")'
 err_count() {
   local n
-  n=$(rpc "$NOICE_ERRS")
+  n=$(rpc "$NOTIFY_ERRS")
   if [ "$n" = "-1" ]; then
-    # noice not up yet: fall back to :messages (works without ext_messages)
+    # snacks not up yet: fall back to :messages (works without ext_messages)
     if [ -n "$(rpc 'execute("messages")' | tr -d '[:space:]')" ]; then echo 999; else echo 0; fi
   else
     echo "$n"
@@ -103,8 +104,8 @@ step() { # $1 = label; checks error delta + visible error text
   n=$(err_count)
   pane=$(tmux capture-pane -t "$SESSION" -p)
   if [ "$n" -gt "$BASE_ERRS" ]; then
-    fail "$1: noice recorded $((n - BASE_ERRS)) new error(s); recent:"
-    rpc 'luaeval("(function() local ok, m = pcall(function() local t = require(\"noice.message.manager\").get({ error = true }, { history = true, sort = true }) local last = t[#t] return last and table.concat(vim.tbl_map(function(l) return l:content() end, last._lines or {}), \" | \") or \"?\" end) return ok and m or \"<unreadable>\" end)()")'
+    fail "$1: notifier recorded $((n - BASE_ERRS)) new error(s); recent:"
+    rpc 'luaeval("(function() local ok, m = pcall(function() local t = Snacks.notifier.get_history() local last = t[#t] return last and (last.msg or tostring(last.level)) or \"?\" end) return ok and m or \"<unreadable>\" end)()")'
     echo
     BASE_ERRS=$n
   elif printf '%s' "$pane" | grep -q 'Error detected\|Error executing\|Error in .*Autocommands\|stack traceback'; then

@@ -35,17 +35,20 @@ function M.config()
     end,
   })
 
-  vim.keymap.set('n', '<M-a>', function()
+  -- Moved off <M-...> 2026-08: herdr owns the alt row now (alt+1..6 tabs,
+  -- alt+j/k/l/u/i/o/7/8/9 workspaces), so those chords never reach nvim.
+  -- Same key letters, now under the <leader>h prefix.
+  vim.keymap.set('n', '<leader>ha', function()
     harpoon():list():add()
   end, { desc = 'Harpoon: Mark File' })
 
-  vim.keymap.set('n', '<M-e>', function()
+  vim.keymap.set('n', '<leader>he', function()
     local h = harpoon()
     h.ui:toggle_quick_menu(h:list())
   end, { desc = 'Harpoon: Toggle Menu' })
 
   for i, key in ipairs { 'j', 'k', 'l', 'u', 'i', 'o', '7', '8', '9' } do
-    vim.keymap.set('n', '<M-' .. key .. '>', function()
+    vim.keymap.set('n', '<leader>h' .. key, function()
       harpoon():list():select(i)
     end, { desc = 'Harpoon File ' .. i })
   end

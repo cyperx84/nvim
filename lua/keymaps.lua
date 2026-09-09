@@ -24,9 +24,6 @@ vim.keymap.set('n', '<C-s>', ':w<CR>', { desc = 'Save file' })
 -- Quick quit
 vim.keymap.set('n', '<C-q>', ':q<CR>', { desc = 'Quit current buffer' })
 
--- Toggle Markview (no plugin file - keep here)
-vim.keymap.set("n", "<leader>tm", "<cmd>Markview<CR>", { desc = "Toggle Markview" })
-
 -- Exit insert mode without hitting Esc
 vim.keymap.set("i", "jk", "<Esc><Esc>", { desc = "Esc" })
 

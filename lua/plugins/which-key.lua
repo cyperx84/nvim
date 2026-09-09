@@ -43,15 +43,20 @@ function M.config()
         },
       },
 
+      -- Only declare prefixes that actually have mappings behind them.
+      -- Groups removed 2025-08: <leader>w/r had zero live mappings
+      -- (verified against nvim_get_keymap at runtime). <leader>S and <leader>O
+      -- hold real session/opencode keys and were previously undeclared.
+      -- <leader>h came back 2026-08 when harpoon moved off the alt row.
       spec = {
         { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
         { '<leader>d', group = '[D]iagnostic' },
-        { '<leader>r', group = '[R]ename' },
         { '<leader>s', group = '[S]earch' },
-        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>S', group = '[S]essions' },
         { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>g', group = '[G]it' },
+        { '<leader>h', group = '[H]arpoon' },
+        { '<leader>O', group = '[O]penCode' },
         { '<leader>o', group = '[O]bsidian' },
         { '<leader>b', group = '[B]uffer' },
         { '<leader>q', group = '[Q]uickfix' },

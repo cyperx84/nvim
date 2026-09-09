@@ -6,7 +6,10 @@ M.specs = {
   -- nvim-treesitter is pinned to 'main' to match the canonical declaration
   -- in the treesitter module (config migrated to the main-branch rewrite).
   { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
-  { src = 'https://github.com/echasnovski/mini.icons' },
+  -- Icons resolve to mini.nvim's bundled mini.icons (eager, same require
+  -- path). A standalone echasnovski/mini.icons install here shadowed the
+  -- bundle — same duplicated-module mistake as the standalone mini.pick
+  -- orphan noted in neo-git.lua.
 }
 
 function M.config()
